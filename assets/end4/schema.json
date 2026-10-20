@@ -471,8 +471,8 @@
  {
   "key": "apps.bluetooth",
   "type": "string",
-  "default": "kcmshell6 kcm_bluetooth",
-  "comment": ""
+  "default": "command -v m3-settings >/dev/null && exec m3-settings bluetooth || exec kcmshell6 kcm_bluetooth",
+  "comment": "Material 3 Settings (m3-settings) and the Material 3 File Manager (m3fm). KDE's modules are used when m3-settings isn't installed."
  },
  {
   "key": "apps.changePassword",
@@ -481,9 +481,15 @@
   "comment": ""
  },
  {
+  "key": "apps.fileManager",
+  "type": "string",
+  "default": "m3fm",
+  "comment": "Folders open here; xdg-open when it isn't installed"
+ },
+ {
   "key": "apps.network",
   "type": "string",
-  "default": "kcmshell6 kcm_networkmanagement",
+  "default": "command -v m3-settings >/dev/null && exec m3-settings network || exec kcmshell6 kcm_networkmanagement",
   "comment": ""
  },
  {
@@ -495,8 +501,14 @@
  {
   "key": "apps.networkEthernet",
   "type": "string",
-  "default": "kcmshell6 kcm_networkmanagement",
+  "default": "command -v m3-settings >/dev/null && exec m3-settings network || exec kcmshell6 kcm_networkmanagement",
   "comment": ""
+ },
+ {
+  "key": "apps.settings",
+  "type": "string",
+  "default": "m3-settings",
+  "comment": "System settings; \"\" = the shell's own settings"
  },
  {
   "key": "apps.taskManager",

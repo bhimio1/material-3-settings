@@ -51,6 +51,6 @@ check() {
 package() {
   cd "$pkgname"
   install -Dm755 target/release/m3-settings "$pkgdir/usr/bin/m3-settings"
-  install -Dm644 packaging/material-3-settings.desktop "$pkgdir/usr/share/applications/material-3-settings.desktop"
+  install -Dm644 packaging/material_3_settings.desktop "$pkgdir/usr/share/applications/material_3_settings.desktop"
   install -Dm644 assets/fonts/LICENSE-Inter.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE-Inter.txt"
 }
