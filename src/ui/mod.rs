@@ -129,8 +129,9 @@ impl Page {
 pub enum Action {
     Goto(Page),
     Toast(String, ToastKind),
-    /// Install packages in a terminal (pacman, or the AUR helper).
-    Install { packages: Vec<String>, aur: bool },
+    /// Install packages in a terminal: from the configured repos (Arch,
+    /// CachyOS, …) when they have them, otherwise with the AUR helper.
+    Install { packages: Vec<String> },
     /// Run a shell command line in a terminal window.
     RunInTerminal(String),
     /// Open a file or folder with the default application.

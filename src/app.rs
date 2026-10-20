@@ -182,22 +182,12 @@ impl App {
                 self.nav_query.clear();
             }
             Action::Toast(text, kind) => self.toast(text, kind),
-            Action::Install { packages, aur } => {
+            Action::Install { packages } => {
                 let refs: Vec<&str> = packages.iter().map(String::as_str).collect();
-                match arch::install_command(&refs, aur, self.config.aur_helper) {
-                    Some(cmd) => {
-                        self.run_in_terminal(&cmd);
-                        // Pick up the new packages once the install is likely done.
-                        self.pending_package_refresh = true;
-                    }
-                    None => self.toast(
-                        format!(
-                            "{} is in the AUR. Install paru or yay first (Packages page).",
-                            packages.join(", ")
-                        ),
-                        ToastKind::Error,
-                    ),
-                }
+                let cmd = arch::install_command(&refs, self.config.aur_helper);
+                self.run_in_terminal(&cmd);
+                // Pick up the new packages once the install is likely done.
+                self.pending_package_refresh = true;
             }
             Action::RunInTerminal(script) => self.run_in_terminal(&script),
             Action::OpenPath(path) => {

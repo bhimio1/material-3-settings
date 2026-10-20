@@ -249,7 +249,7 @@ pub fn show(ui: &mut Ui, app: &mut App, id: &str) {
                             .on_hover_text(format!("Installs the `{package}` package in a terminal"))
                             .clicked()
                         {
-                            actions.push(Action::Install { packages: vec![package.to_string()], aur });
+                            actions.push(Action::Install { packages: vec![package.to_string()] });
                         }
                     } else if !target.reload.is_empty()
                         && widgets::button(ui, ButtonKind::Tonal, Some(ICON_REFRESH), "Reload app")

@@ -2,6 +2,7 @@
 
 use crate::app::App;
 use crate::sys::power::{self, Backlight, PowerSupplies, Profiles};
+use crate::sys::scx;
 use crate::sys::task::Task;
 use crate::ui::common::{dialog_buttons, modal};
 use crate::ui::common::{self, card, row};
@@ -60,6 +61,14 @@ pub struct State {
     confirm: Option<SessionAction>,
     threshold: Option<u8>,
     swap: Option<bool>,
+    /// sched-ext: what's running and which schedulers exist.
+    scx: Task<Result<(scx::Current, Vec<String>), String>>,
+    /// Scheduler and mode picked in the card, before applying.
+    scx_pick: Option<(String, String)>,
+}
+
+fn load_scx() -> Result<(scx::Current, Vec<String>), String> {
+    Ok((scx::current()?, scx::list()?))
 }
 
 fn battery_icon(capacity: u8, charging: bool) -> MaterialIcon {
@@ -108,6 +117,10 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     if has_brightnessctl {
         st.brightness.ensure(&ctx, power::load_brightness);
     }
+    let has_scx = scx::available();
+    if has_scx {
+        st.scx.ensure(&ctx, load_scx);
+    }
     let swap = *st.swap.get_or_insert_with(power::has_swap);
     if let Some(result) = st.op.take() {
         match result {
@@ -122,6 +135,9 @@ pub fn show(ui: &mut Ui, app: &mut App) {
             st.brightness.spawn(&ctx, power::load_brightness);
         }
         st.supplies.spawn(&ctx, power::read_supplies);
+        if has_scx {
+            st.scx.spawn(&ctx, load_scx);
+        }
     }
 
     let installed = app.installed.clone();
@@ -223,6 +239,64 @@ pub fn show(ui: &mut Ui, app: &mut App) {
         }
 
         // ---------------------------------------------------- brightness
+        // ---------------------------------------------------- sched-ext
+        // CachyOS ships scx_loader; elsewhere it's the scx-scheds package.
+        if has_scx {
+            card(ui, "CPU scheduler", |ui| {
+                match &st.scx.value {
+                    None => common::loading(ui, "Asking scx_loader…"),
+                    Some(Err(e)) => common::note(ui, &format!("scx_loader isn't responding: {e}. Enable it with `systemctl enable --now scx_loader`.")),
+                    Some(Ok((current, scheds))) => {
+                        let busy = st.op.running() || st.scx.running();
+                        row(ui, "Running now", &scx::describe(current), |ui| {
+                            if current.sched.is_some() {
+                                if widgets::button_enabled(ui, ButtonKind::Text, None, "Stop", !busy).clicked() {
+                                    st.op.spawn(&ctx, scx::stop);
+                                }
+                                if widgets::button_enabled(ui, ButtonKind::Text, Some(ICON_RESTART_ALT), "Default", !busy)
+                                    .on_hover_text("Restore the default scheduler from scx_loader's config")
+                                    .clicked()
+                                {
+                                    st.op.spawn(&ctx, scx::restore);
+                                }
+                            }
+                        });
+                        ui.separator();
+                        let (pick_sched, pick_mode) = st.scx_pick.get_or_insert_with(|| {
+                            (
+                                current.sched.clone().unwrap_or_else(|| "lavd".into()),
+                                current.mode.clone().unwrap_or_else(|| "gaming".into()),
+                            )
+                        });
+                        row(ui, "Switch scheduler", "sched-ext schedulers load without a reboot. For games, scx_lavd in Gaming mode is a good start.", |ui| {
+                            let running = current.sched.is_some();
+                            let same = current.sched.as_deref() == Some(pick_sched.as_str()) && current.mode.as_deref() == Some(pick_mode.as_str());
+                            if widgets::button_enabled(ui, ButtonKind::Filled, None, "Apply", !busy && !same).clicked() {
+                                let (sched, mode) = (pick_sched.clone(), pick_mode.clone());
+                                st.op.spawn(&ctx, move || scx::switch(&sched, &mode, running));
+                            }
+                            egui::ComboBox::from_id_salt("scx-mode")
+                                .width(130.0)
+                                .selected_text(scx::MODES.iter().find(|(k, _)| *k == pick_mode.as_str()).map(|(_, l)| *l).unwrap_or(pick_mode.as_str()))
+                                .show_ui(ui, |ui| {
+                                    for (key, label) in scx::MODES {
+                                        ui.selectable_value(pick_mode, key.to_string(), label);
+                                    }
+                                });
+                            egui::ComboBox::from_id_salt("scx-sched")
+                                .width(130.0)
+                                .selected_text(format!("scx_{pick_sched}"))
+                                .show_ui(ui, |ui| {
+                                    for s in scheds {
+                                        ui.selectable_value(pick_sched, s.clone(), format!("scx_{s}"));
+                                    }
+                                });
+                        });
+                    }
+                }
+            });
+        }
+
         card(ui, "Screen", |ui| {
             if !common::require(ui, actions, &installed, "brightnessctl", "brightnessctl", "It changes the screen backlight.") {
                 return;
@@ -268,7 +342,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                             actions.push(Action::Goto(Page::App("hypridle".into())));
                         }
                     } else if widgets::button(ui, ButtonKind::Filled, Some(ICON_DOWNLOAD), "Install").clicked() {
-                        actions.push(Action::Install { packages: vec!["hypridle".into()], aur: false });
+                        actions.push(Action::Install { packages: vec!["hypridle".into()] });
                     }
                 },
             );

@@ -235,6 +235,22 @@ pub fn repo_enabled(text: &str, name: &str) -> bool {
     text.lines().any(|l| is_header(l, name))
 }
 
+/// Enabled repositories in order (every active section except `[options]`).
+pub fn repos(text: &str) -> Vec<String> {
+    text.lines()
+        .filter_map(|l| {
+            let t = l.trim();
+            (t.starts_with('[') && t.ends_with(']')).then(|| t[1..t.len() - 1].trim().to_string())
+        })
+        .filter(|name| name != "options")
+        .collect()
+}
+
+/// CachyOS's own repositories (`cachyos`, `cachyos-v3`, `cachyos-core-znver4`, …).
+pub fn cachyos_repos(text: &str) -> Vec<String> {
+    repos(text).into_iter().filter(|r| r.starts_with("cachyos")).collect()
+}
+
 /// Enable or disable a repository section such as `[multilib]` by
 /// (un)commenting its header and the option lines directly below it, up to
 /// the next blank line or section.
@@ -364,6 +380,13 @@ mod tests {
         assert!(s[0].installed && s[1].installed && !s[2].installed);
         assert_eq!(s[1].description, "A modern, hackable, featureful, OpenGL-based terminal emulator");
         assert_eq!(s[2].repo, "extra");
+    }
+
+    #[test]
+    fn repo_list() {
+        let conf = "[options]\nColor\n\n[cachyos-v3]\nInclude = /etc/pacman.d/cachyos-v3-mirrorlist\n\n[cachyos-core-v3]\nInclude = x\n\n[core]\nInclude = /etc/pacman.d/mirrorlist\n\n#[multilib]\n#Include = /etc/pacman.d/mirrorlist\n";
+        assert_eq!(repos(conf), vec!["cachyos-v3", "cachyos-core-v3", "core"]);
+        assert_eq!(cachyos_repos(conf), vec!["cachyos-v3", "cachyos-core-v3"]);
     }
 
     #[test]
