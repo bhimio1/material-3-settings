@@ -249,11 +249,11 @@ fn status_card(ui: &mut Ui, st: &mut State, ctx: &egui::Context, backups: bool, 
         ui.separator();
         let fork_desc = if status.fork.installed {
             format!(
-                "pctrade's fork with Material 3 Expressive styling, desktop widgets, online wallpapers, lyrics and a preset gallery.{}",
+                "Fork of pctrade's end4-pC with Material 3 Expressive styling, desktop widgets, a preset gallery, and these Material 3 apps built in.{}",
                 status.fork.commit.as_ref().map(|c| format!(" Version {c}.")).unwrap_or_default()
             )
         } else {
-            "pctrade's fork with Material 3 Expressive styling, desktop widgets, online wallpapers, lyrics and a preset gallery. It needs illogical-impulse installed and keeps its own folder, so nothing of your current setup is changed.".to_string()
+            "Fork of pctrade's end4-pC with Material 3 Expressive styling, desktop widgets, a preset gallery, and these Material 3 apps built in. It needs illogical-impulse installed and keeps its own folder, so nothing of your current setup is changed.".to_string()
         };
         common::row(ui, "end4-pC", &fork_desc, |ui| {
             if status.fork.installed {

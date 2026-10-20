@@ -414,7 +414,7 @@ impl MonitorRule {
         Some(rule)
     }
 
-    fn lua(&self) -> String {
+    pub fn lua(&self) -> String {
         if self.disabled {
             return format!("hl.monitor({{ output = {}, disabled = true }})", lua_string(&self.output));
         }
@@ -846,9 +846,13 @@ pub fn monitors() -> Result<Vec<Monitor>, String> {
     cmd::run("hyprctl", &["monitors", "all", "-j"]).map(|s| parse_monitors(&s))
 }
 
-/// Apply a monitor rule for the running session.
-pub fn apply_monitor(rule: &MonitorRule) -> Result<(), String> {
-    let out = cmd::run("hyprctl", &["keyword", "monitor", &rule.conf_value()])?;
+/// Apply a monitor rule for the running session. Lua configs (Hyprland
+/// 0.55+) ignore `hyprctl keyword`, so those go through `hyprctl eval`.
+pub fn apply_monitor(rule: &MonitorRule, syntax: Syntax) -> Result<(), String> {
+    let out = match syntax {
+        Syntax::Lua => cmd::run("hyprctl", &["eval", &rule.lua()])?,
+        Syntax::Conf => cmd::run("hyprctl", &["keyword", "monitor", &rule.conf_value()])?,
+    };
     let out = out.trim();
     if out.is_empty() || out == "ok" {
         Ok(())

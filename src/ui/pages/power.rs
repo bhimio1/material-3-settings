@@ -3,11 +3,11 @@
 use crate::app::App;
 use crate::sys::power::{self, Backlight, PowerSupplies, Profiles};
 use crate::sys::task::Task;
-use crate::theme::M3Palette;
+use crate::ui::common::{dialog_buttons, modal};
 use crate::ui::common::{self, card, row};
 use crate::ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, Action, Page, ToastKind};
-use egui::{vec2, Color32, CornerRadius, Frame, Id, Margin, RichText, Ui};
+use egui::{vec2, RichText, Ui};
 use egui_material_icons::{icons::*, MaterialIcon};
 use std::time::Duration;
 
@@ -60,51 +60,6 @@ pub struct State {
     confirm: Option<SessionAction>,
     threshold: Option<u8>,
     swap: Option<bool>,
-}
-
-/// A centered modal dialog in the app's style. Returns what `body` returns.
-pub(crate) fn modal<R>(
-    ctx: &egui::Context,
-    p: &M3Palette,
-    id: &str,
-    icon: MaterialIcon,
-    title: &str,
-    body: impl FnOnce(&mut Ui) -> R,
-) -> egui::ModalResponse<R> {
-    egui::Modal::new(Id::unique(("m3s-modal", id)))
-        .backdrop_color(p.scrim.gamma_multiply(0.4))
-        .frame(
-            Frame::new()
-                .fill(p.surface_container_high)
-                .corner_radius(CornerRadius::same(28))
-                .inner_margin(Margin::same(24))
-                .shadow(egui::Shadow {
-                    offset: [0, 8],
-                    blur: 32,
-                    spread: 0,
-                    color: Color32::from_black_alpha(90),
-                }),
-        )
-        .show(ctx, |ui| {
-            ui.vertical_centered(|ui| {
-                widgets::icon(ui, icon, 26.0, p.secondary);
-                ui.add_space(8.0);
-                ui.label(RichText::new(title).size(22.0).color(p.on_surface));
-            });
-            ui.add_space(14.0);
-            body(ui)
-        })
-}
-
-/// Right-aligned dialog buttons on a fixed-height row.
-pub(crate) fn dialog_buttons(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
-    ui.add_space(18.0);
-    let width = ui.available_width();
-    ui.allocate_ui_with_layout(
-        vec2(width, 36.0),
-        egui::Layout::right_to_left(egui::Align::Center),
-        add,
-    );
 }
 
 fn battery_icon(capacity: u8, charging: bool) -> MaterialIcon {

@@ -15,8 +15,10 @@ use std::sync::OnceLock;
 
 pub const UPSTREAM: &str = "ii";
 pub const FORK: &str = "end4-pC";
-pub const FORK_REPO: &str = "https://github.com/pctrade/end4-pC.git";
-pub const FORK_URL: &str = "https://github.com/pctrade/end4-pC";
+/// bhimio1's end4-pC, a fork of pctrade's that uses Material 3 Settings,
+/// the Material 3 File Manager and Material 3 Music.
+pub const FORK_REPO: &str = "https://github.com/bhimio1/end4-pC.git";
+pub const FORK_URL: &str = "https://github.com/bhimio1/end4-pC";
 pub const UPSTREAM_URL: &str = "https://github.com/end-4/dots-hyprland";
 
 pub fn quickshell_dir(home: &Path) -> PathBuf {

@@ -266,9 +266,10 @@ fn monitor_card(ui: &mut Ui, st: &mut State, ctx: &egui::Context, m: &Monitor, t
             });
         }
 
+        let syntax = target.syntax;
         if let Some(rule) = try_rule {
             st.job.spawn(ctx, move || {
-                hypr::apply_monitor(&rule)?;
+                hypr::apply_monitor(&rule, syntax)?;
                 Ok((format!("Applied to {} for this session", rule.output), None))
             });
         } else if let Some(rule) = keep_rule {
@@ -277,8 +278,8 @@ fn monitor_card(ui: &mut Ui, st: &mut State, ctx: &egui::Context, m: &Monitor, t
             st.job.spawn(ctx, move || {
                 block.set_monitor(rule.clone());
                 hypr::save_block(&target, &block, backups)?;
-                // A reload picks the saved rule up if the live keyword fails.
-                if hypr::apply_monitor(&rule).is_err() {
+                // A reload picks the saved rule up if applying it live fails.
+                if hypr::apply_monitor(&rule, syntax).is_err() {
                     hypr::reload()?;
                 }
                 Ok((format!("Saved {}", rule.output), Some(block)))

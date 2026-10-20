@@ -1,7 +1,7 @@
 //! Network: Wi-Fi on/off and networks, wired/VPN connections, airplane mode
 //! and the hostname, through NetworkManager's `nmcli`.
 
-use super::sound::{empty_hint, list_row};
+use crate::ui::common::{empty_hint, list_row};
 use crate::app::App;
 use crate::sys::net::{self, Wifi};
 use crate::sys::{cmd, task::Task};

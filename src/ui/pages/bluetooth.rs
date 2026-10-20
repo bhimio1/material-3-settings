@@ -1,7 +1,7 @@
 //! Bluetooth: adapter power and visibility, paired devices, and pairing new
 //! ones, through `bluetoothctl`.
 
-use super::sound::{empty_hint, list_row};
+use crate::ui::common::{empty_hint, list_row};
 use crate::app::App;
 use crate::sys::bt::{self, Device};
 use crate::sys::task::Task;

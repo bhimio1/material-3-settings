@@ -34,7 +34,7 @@ Anything interactive (installs, upgrades) opens in your terminal so you can see 
 
 [end4-pC](https://github.com/pctrade/end4-pC) is pctrade's fork of end-4's [illogical-impulse](https://github.com/end-4/dots-hyprland), and the most popular one. Both read `~/.config/illogical-impulse/config.json`, so this page works for either.
 - Detects which shells are installed, which one Hyprland starts, and whether it's running.
-- Installs or updates end4-pC, and makes either shell the default. The default is written to `~/.config/hypr/custom/variables.lua`, so dotfile updates don't undo it.
+- Installs or updates end4-pC (from [bhimio1/end4-pC](https://github.com/bhimio1/end4-pC), the fork that has these Material 3 apps built in), and makes either shell the default. The default is written to `~/.config/hypr/custom/variables.lua`, so dotfile updates don't undo it.
 - Restarts the shell and opens its settings overlay.
 - Covers all 588 options with proper controls: switches, sliders, and dropdowns built from the option comments. It has an Essentials card, section chips, search, and reset to default. Changes apply live and leave the rest of the file untouched.
 
@@ -74,6 +74,8 @@ From this repository, with the included PKGBUILD:
 cd packaging
 makepkg -si
 ```
+
+Prebuilt x86_64 binaries are attached to [releases](https://github.com/bhimio1/material-3-settings/releases). The end4-pC fork installs the latest one automatically.
 
 Or build directly:
 

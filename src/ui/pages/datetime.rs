@@ -1,6 +1,6 @@
 //! Date & time: clock, time zone, network time, and locale.
 
-use super::power::{dialog_buttons, modal};
+use crate::ui::common::{dialog_buttons, modal};
 use crate::app::App;
 use crate::sys::task::Task;
 use crate::sys::time::{self, LocaleStatus, TimeStatus};
