@@ -1,0 +1,56 @@
+# Maintainer: bhimio1
+pkgname=material-3-settings-git
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Material 3 settings manager for Arch Linux, Hyprland and end4-pC"
+arch=('x86_64' 'aarch64')
+url="https://github.com/bhimio1/material-3-settings"
+license=('unknown')  # TODO: pick a license
+depends=('libxkbcommon' 'wayland' 'libglvnd' 'fontconfig' 'xdg-utils' 'polkit')
+makedepends=('cargo' 'git')
+optdepends=(
+  'glib2: GTK theme, icon and font settings (gsettings)'
+  'libpulse: sound settings (pactl)'
+  'networkmanager: network settings (nmcli)'
+  'bluez-utils: bluetooth settings (bluetoothctl)'
+  'power-profiles-daemon: power profiles'
+  'brightnessctl: screen brightness'
+  'pacman-contrib: update checks and cache cleaning (checkupdates, paccache)'
+  'reflector: mirror ranking'
+  'hyprland: Hyprland and display settings'
+)
+provides=('material-3-settings')
+conflicts=('material-3-settings')
+source=("$pkgname::git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$pkgname"
+  printf "0.1.0.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd "$pkgname"
+  export RUSTUP_TOOLCHAIN=stable
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  cd "$pkgname"
+  export RUSTUP_TOOLCHAIN=stable
+  export CARGO_TARGET_DIR=target
+  cargo build --frozen --release
+}
+
+check() {
+  cd "$pkgname"
+  export RUSTUP_TOOLCHAIN=stable
+  cargo test --frozen
+}
+
+package() {
+  cd "$pkgname"
+  install -Dm755 target/release/m3-settings "$pkgdir/usr/bin/m3-settings"
+  install -Dm644 packaging/material-3-settings.desktop "$pkgdir/usr/share/applications/material-3-settings.desktop"
+  install -Dm644 assets/fonts/LICENSE-Inter.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE-Inter.txt"
+}

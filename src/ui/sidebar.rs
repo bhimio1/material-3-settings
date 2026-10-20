@@ -22,28 +22,10 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     });
     ui.add_space(14.0);
 
-    let search = egui::Frame::new()
-        .fill(p.surface_container_high)
-        .corner_radius(egui::CornerRadius::same(22))
-        .inner_margin(egui::Margin::symmetric(12, 6))
-        .show(ui, |ui| {
-            ui.horizontal(|ui| {
-                widgets::icon(ui, ICON_SEARCH, 20.0, p.on_surface_variant);
-                ui.add(
-                    egui::TextEdit::singleline(&mut app.nav_query)
-                        .hint_text("Search settings")
-                        .frame(egui::Frame::NONE)
-                        .desired_width(ui.available_width() - 28.0),
-                )
-            })
-            .inner
-        })
-        .inner;
+    let width = ui.available_width() - 4.0;
+    let search = super::common::search_field(ui, &mut app.nav_query, "Search settings", width);
     if ui.input(|i| i.modifiers.command && i.key_pressed(egui::Key::F)) {
         search.request_focus();
-    }
-    if !app.nav_query.is_empty() && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-        app.nav_query.clear();
     }
     ui.add_space(8.0);
 

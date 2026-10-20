@@ -187,3 +187,53 @@ pub fn facts(ui: &mut Ui, id: &str, items: &[(&str, String)]) {
         });
     ui.add_space(8.0);
 }
+
+/// A pill-shaped search field like the file manager's toolbar search.
+/// Escape clears it.
+pub fn search_field(ui: &mut Ui, text: &mut String, hint: &str, width: f32) -> egui::Response {
+    use egui::{pos2, vec2, Rect, Sense};
+    let p = widgets::palette(ui);
+    let (rect, bg) = ui.allocate_exact_size(vec2(width, 40.0), Sense::hover());
+    let fill = if bg.hovered() {
+        widgets::state_layer(p.surface_container_high, p.on_surface, &bg)
+    } else {
+        p.surface_container_high
+    };
+    ui.painter().rect_filled(rect, CornerRadius::same(20), fill);
+    widgets::paint_icon(ui, ICON_SEARCH, pos2(rect.left() + 20.0, rect.center().y), 20.0, p.on_surface_variant);
+    let clear_w = if text.is_empty() { 0.0 } else { 30.0 };
+    let inner = Rect::from_min_max(
+        pos2(rect.left() + 38.0, rect.center().y - 10.0),
+        pos2(rect.right() - 10.0 - clear_w, rect.center().y + 10.0),
+    );
+    let mut child = ui.new_child(
+        egui::UiBuilder::new()
+            .max_rect(inner)
+            .layout(egui::Layout::left_to_right(egui::Align::Center)),
+    );
+    let resp = child.add(
+        egui::TextEdit::singleline(text)
+            .frame(egui::Frame::NONE)
+            .hint_text(hint)
+            .font(egui::FontId::proportional(14.0))
+            .desired_width(inner.width()),
+    );
+    if resp.has_focus() && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+        text.clear();
+        resp.surrender_focus();
+    }
+    if !text.is_empty() {
+        let r = Rect::from_center_size(pos2(rect.right() - 22.0, rect.center().y), vec2(28.0, 28.0));
+        let clear = ui
+            .interact(r, resp.id.with("clear"), Sense::click())
+            .on_hover_cursor(egui::CursorIcon::PointingHand);
+        if clear.hovered() {
+            ui.painter().circle_filled(r.center(), 14.0, p.on_surface.gamma_multiply(0.08));
+        }
+        widgets::paint_icon(ui, ICON_CLOSE, r.center(), 18.0, p.on_surface_variant);
+        if clear.clicked() {
+            text.clear();
+        }
+    }
+    resp
+}

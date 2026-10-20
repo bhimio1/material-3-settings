@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Settings
+GenericName=Settings Manager
+Comment=Material 3 settings for Arch Linux, Hyprland and end4-pC
+Exec=m3-settings %u
+Icon=preferences-system
+Terminal=false
+Categories=Settings;System;
+Keywords=settings;preferences;config;dotfiles;hyprland;end4;arch;pacman;
+StartupWMClass=material_3_settings
