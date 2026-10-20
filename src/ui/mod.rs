@@ -140,7 +140,6 @@ pub enum Action {
     RefreshPackages,
     /// Preferences changed: save them and re-apply the theme.
     ConfigChanged,
-    ReloadTheme,
 }
 
 pub type Actions = Vec<Action>;
@@ -149,11 +148,3 @@ pub fn toast(actions: &mut Actions, text: impl Into<String>, kind: ToastKind) {
     actions.push(Action::Toast(text.into(), kind));
 }
 
-/// Toast the error of a fallible operation, or `ok` on success.
-pub fn report<T>(actions: &mut Actions, result: Result<T, String>, ok: &str) {
-    match result {
-        Ok(_) if !ok.is_empty() => toast(actions, ok, ToastKind::Success),
-        Ok(_) => {}
-        Err(e) => toast(actions, e, ToastKind::Error),
-    }
-}

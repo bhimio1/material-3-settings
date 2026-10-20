@@ -153,7 +153,7 @@ impl App {
         self.was_focused = focused;
         let changed: Vec<PathBuf> = self.theme_events.try_iter().collect();
         if let Some(theme) = self.theme_file() {
-            if changed.iter().any(|p| *p == theme) {
+            if changed.contains(&theme) {
                 self.apply_theme();
             }
         }
@@ -219,7 +219,6 @@ impl App {
                 }
                 self.apply_theme();
             }
-            Action::ReloadTheme => self.apply_theme(),
         }
     }
 

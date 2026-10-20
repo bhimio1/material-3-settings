@@ -356,29 +356,6 @@ pub fn truncated_galley(
     ui.painter().layout_job(job)
 }
 
-/// Multi-line centered galley limited to `rows` lines.
-pub fn wrapped_galley(
-    ui: &Ui,
-    text: &str,
-    font: FontId,
-    color: Color32,
-    max_width: f32,
-    rows: usize,
-) -> Arc<egui::Galley> {
-    let mut job = egui::text::LayoutJob::single_section(
-        text.to_string(),
-        egui::TextFormat::simple(font, color),
-    );
-    job.wrap = egui::text::TextWrapping {
-        max_width: max_width.max(10.0),
-        max_rows: rows,
-        break_anywhere: false,
-        overflow_character: Some('…'),
-    };
-    job.halign = egui::Align::Center;
-    ui.painter().layout_job(job)
-}
-
 pub fn section_header(ui: &mut Ui, text: &str) {
     let p = palette(ui);
     ui.add_space(10.0);
@@ -562,36 +539,6 @@ pub fn clickable_card(ui: &mut Ui, size: Vec2, fill: Color32, id: Id) -> (Rect, 
     ui.painter().rect_filled(rect, CornerRadius::same(16), fill);
     (rect, response)
 }
-
-/// A row in a popup/context menu with icon and optional shortcut hint.
-pub fn menu_item(ui: &mut Ui, icon: MaterialIcon, label: &str, shortcut: &str) -> Response {
-    let p = palette(ui);
-    let mut button = egui::Button::new((icon_text(icon, 18.0).color(p.on_surface_variant), label))
-        .frame(false)
-        .min_size(vec2(220.0, 32.0));
-    if !shortcut.is_empty() {
-        button = button.shortcut_text(
-            egui::RichText::new(shortcut)
-                .size(12.0)
-                .color(p.on_surface_variant),
-        );
-    }
-    ui.add(button)
-}
-
-pub fn menu_item_enabled(
-    ui: &mut Ui,
-    enabled: bool,
-    icon: MaterialIcon,
-    label: &str,
-    shortcut: &str,
-) -> Response {
-    ui.add_enabled_ui(enabled, |ui| menu_item(ui, icon, label, shortcut))
-        .inner
-}
-
-/// An empty icon slot, for aligning unchecked menu items with checked ones.
-pub const ICON_BLANK: MaterialIcon = MaterialIcon::new(" ");
 
 /// Text in the medium-weight title font.
 pub fn title_text(text: impl Into<String>, size: f32) -> egui::RichText {

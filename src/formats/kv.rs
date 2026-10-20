@@ -151,6 +151,7 @@ pub fn get(text: &str, dialect: &Dialect, key: &str) -> Option<String> {
     found
 }
 
+#[cfg(test)]
 /// Is the key present but commented out (and not active anywhere)?
 pub fn is_commented(text: &str, dialect: &Dialect, key: &str) -> bool {
     if get(text, dialect, key).is_some() {
@@ -252,8 +253,8 @@ pub fn unset(text: &str, dialect: &Dialect, key: &str) -> String {
     let refs: Vec<&str> = lines.iter().map(String::as_str).collect();
     let mut hits = Vec::new();
     for (start, end) in section_ranges(dialect, &refs, section.as_deref()) {
-        for i in start..end {
-            if let Some((_, _, false)) = match_line(dialect, refs[i], &bare) {
+        for (i, line) in refs.iter().enumerate().take(end).skip(start) {
+            if let Some((_, _, false)) = match_line(dialect, line, &bare) {
                 hits.push(i);
             }
         }

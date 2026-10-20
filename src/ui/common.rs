@@ -54,15 +54,20 @@ pub fn card(ui: &mut Ui, title: &str, add: impl FnOnce(&mut Ui)) {
 pub fn row(ui: &mut Ui, title: &str, desc: &str, control: impl FnOnce(&mut Ui)) {
     let p = widgets::palette(ui);
     ui.add_space(8.0);
-    ui.horizontal(|ui| {
-        ui.vertical(|ui| {
-            ui.set_max_width((ui.available_width() - 280.0).max(200.0));
-            ui.label(RichText::new(title).size(14.5).color(p.on_surface));
-            if !desc.is_empty() {
-                ui.add(egui::Label::new(RichText::new(desc).size(12.5).color(p.on_surface_variant)).wrap());
-            }
+    // Controls are laid out first (from the right) so the text wraps in
+    // whatever width they leave.
+    let size = egui::vec2(ui.available_width(), ui.spacing().interact_size.y);
+    ui.allocate_ui_with_layout(size, egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        control(ui);
+        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+            ui.vertical(|ui| {
+                ui.set_min_width(ui.available_width().min(160.0));
+                ui.label(RichText::new(title).size(14.5).color(p.on_surface));
+                if !desc.is_empty() {
+                    ui.add(egui::Label::new(RichText::new(desc).size(12.5).color(p.on_surface_variant)).wrap());
+                }
+            });
         });
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), control);
     });
     ui.add_space(8.0);
 }
@@ -90,13 +95,13 @@ pub fn banner(ui: &mut Ui, icon: MaterialIcon, text: &str, error: bool, actions:
         .inner_margin(Margin::symmetric(16, 10))
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
-            ui.horizontal(|ui| {
-                widgets::icon(ui, icon, 20.0, fg);
-                ui.vertical(|ui| {
-                    ui.set_max_width((ui.available_width() - 260.0).max(200.0));
+            let size = egui::vec2(ui.available_width(), ui.spacing().interact_size.y);
+            ui.allocate_ui_with_layout(size, egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                actions(ui);
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    widgets::icon(ui, icon, 20.0, fg);
                     ui.add(egui::Label::new(RichText::new(text).color(fg)).wrap());
                 });
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), actions);
             });
         });
 }
@@ -152,23 +157,6 @@ pub fn refresh_button(ui: &mut Ui, busy: bool) -> bool {
     } else {
         widgets::icon_button(ui, ICON_REFRESH, "Refresh", true).clicked()
     }
-}
-
-/// A combo box over string options; returns true when the value changed.
-pub fn combo(ui: &mut Ui, id: impl std::hash::Hash + std::fmt::Debug, value: &mut String, options: &[String], width: f32) -> bool {
-    let mut changed = false;
-    egui::ComboBox::from_id_salt(id)
-        .width(width)
-        .selected_text(if value.is_empty() { "—".to_string() } else { value.clone() })
-        .show_ui(ui, |ui| {
-            for opt in options {
-                if ui.selectable_label(value == opt, opt).clicked() && value != opt {
-                    *value = opt.clone();
-                    changed = true;
-                }
-            }
-        });
-    changed
 }
 
 /// Label/value pairs in two columns (used by About and status cards).

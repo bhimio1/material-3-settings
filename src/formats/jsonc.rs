@@ -87,6 +87,7 @@ fn string_end(bytes: &[u8], start: usize) -> usize {
     bytes.len()
 }
 
+#[cfg(test)]
 pub fn has_comments(text: &str) -> bool {
     strip(text).len() != text.len() && {
         // Trailing commas alone also change the length; check for comments.

@@ -30,12 +30,6 @@ pub fn run(program: &str, args: &[&str]) -> Result<String, String> {
     }
 }
 
-/// Like [`run`] but with owned arguments.
-pub fn run_owned(program: &str, args: &[String]) -> Result<String, String> {
-    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
-    run(program, &refs)
-}
-
 /// Run a program, feeding `input` on stdin.
 pub fn run_with_stdin(program: &str, args: &[&str], input: &[u8]) -> Result<String, String> {
     let mut child = Command::new(program)
