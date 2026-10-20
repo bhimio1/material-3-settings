@@ -37,6 +37,10 @@ impl OsRelease {
         os
     }
 
+    pub fn is_cachyos(&self) -> bool {
+        self.id == "cachyos"
+    }
+
     /// Arch itself or a derivative (EndeavourOS, CachyOS, Manjaro, …).
     pub fn is_arch_based(&self) -> bool {
         self.id == "arch" || self.id_like.split_whitespace().any(|w| w == "arch")
@@ -90,19 +94,26 @@ impl AurHelper {
     }
 }
 
-/// Command line that installs `packages`. AUR packages need a helper;
-/// official ones use pacman directly.
-pub fn install_command(packages: &[&str], aur: bool, helper: AurHelper) -> Option<String> {
+/// Command line that installs `packages`. Each package comes from the
+/// configured repos when they have it (Arch's, or CachyOS's own repos, which
+/// carry many AUR packages), and from the AUR helper otherwise. The check
+/// runs in the terminal, so the list is always current. POSIX `sh` only, in
+/// a subshell so `exit` doesn't close the terminal before it can be read.
+pub fn install_command(packages: &[&str], helper: AurHelper) -> String {
     let list = packages
         .iter()
         .map(|p| term::shell_quote(p))
         .collect::<Vec<_>>()
         .join(" ");
-    if aur {
-        helper.resolve().map(|h| format!("{h} -S --needed {list}"))
-    } else {
-        Some(format!("sudo pacman -S --needed {list}"))
-    }
+    let aur_step = match helper.resolve() {
+        Some(h) => format!("{h} -S --needed $aur"),
+        None => "echo \"Not in your repos: $aur. Install paru or yay (Packages page) for AUR packages.\"; exit 1".into(),
+    };
+    format!(
+        "(repo=; aur=; for p in {list}; do if pacman -Si \"$p\" >/dev/null 2>&1; then repo=\"$repo $p\"; else aur=\"$aur $p\"; fi; done; \
+         if [ -n \"$repo\" ]; then sudo pacman -S --needed $repo || exit $?; fi; \
+         if [ -n \"$aur\" ]; then {aur_step}; fi)"
+    )
 }
 
 /// Full system upgrade, through the AUR helper when there is one.
@@ -121,6 +132,10 @@ mod tests {
     fn os_release_detection() {
         let arch = OsRelease::parse("NAME=\"Arch Linux\"\nID=arch\nPRETTY_NAME=\"Arch Linux\"\n");
         assert!(arch.is_arch_based());
+        let cachy = OsRelease::parse("NAME=\"CachyOS Linux\"\nID=cachyos\nID_LIKE=arch\n");
+        assert!(cachy.is_arch_based());
+        assert!(cachy.is_cachyos());
+        assert!(!arch.is_cachyos());
         let endeavour = OsRelease::parse("ID=endeavouros\nID_LIKE=arch\n");
         assert!(endeavour.is_arch_based());
         let debian = OsRelease::parse("ID=debian\n");
@@ -143,14 +158,38 @@ mod tests {
 
     #[test]
     fn install_commands() {
-        assert_eq!(
-            install_command(&["kitty", "foot"], false, AurHelper::None).unwrap(),
-            "sudo pacman -S --needed kitty foot"
-        );
-        assert_eq!(
-            install_command(&["x"], true, AurHelper::Paru).unwrap(),
-            "paru -S --needed x"
-        );
-        assert!(install_command(&["x"], true, AurHelper::None).is_none());
+        let cmd = install_command(&["kitty", "it's"], AurHelper::Paru);
+        assert!(cmd.contains("for p in kitty 'it'\\''s'; do"));
+        assert!(cmd.contains("sudo pacman -S --needed $repo"));
+        assert!(cmd.contains("paru -S --needed $aur"));
+        assert!(install_command(&["x"], AurHelper::None).contains("exit 1"));
+    }
+
+    /// Runs the generated script with stub pacman/sudo/paru to check routing.
+    #[test]
+    fn install_command_routes_repo_and_aur_packages() {
+        let dir = tempfile::tempdir().unwrap();
+        let bin = dir.path();
+        let log = bin.join("log");
+        let stub = |name: &str, body: &str| {
+            let p = bin.join(name);
+            std::fs::write(&p, format!("#!/bin/sh\n{body}\n")).unwrap();
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o755)).unwrap();
+        };
+        // "kitty" is in the repos, "paru-only" isn't.
+        stub("pacman", &format!("if [ \"$1\" = -Si ]; then [ \"$2\" = kitty ]; exit $?; fi; echo \"pacman $*\" >> {}", log.display()));
+        stub("sudo", "exec \"$@\"");
+        stub("paru", &format!("echo \"paru $*\" >> {}", log.display()));
+        let script = install_command(&["kitty", "paru-only"], AurHelper::Paru);
+        let path = format!("{}:/usr/bin:/bin", bin.display());
+        let status = std::process::Command::new("sh")
+            .args(["-c", &script])
+            .env("PATH", path)
+            .status()
+            .unwrap();
+        assert!(status.success());
+        let logged = std::fs::read_to_string(&log).unwrap();
+        assert_eq!(logged, "pacman -S --needed kitty\nparu -S --needed paru-only\n");
     }
 }

@@ -207,7 +207,6 @@ fn mixer_button(ui: &mut Ui, actions: &mut Actions, installed: &std::collections
         {
             actions.push(Action::Install {
                 packages: vec!["pavucontrol".into()],
-                aur: false,
             });
         }
         None => {}

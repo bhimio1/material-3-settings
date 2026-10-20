@@ -9,6 +9,7 @@ pub mod gtk;
 pub mod mime;
 pub mod net;
 pub mod pacman;
+pub mod scx;
 pub mod paths;
 pub mod power;
 pub mod sysinfo;

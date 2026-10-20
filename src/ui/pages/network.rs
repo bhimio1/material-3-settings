@@ -338,7 +338,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                         }
                     }
                 } else if widgets::button(ui, ButtonKind::Outlined, Some(ICON_DOWNLOAD), "Install editor").clicked() {
-                    actions.push(Action::Install { packages: vec!["nm-connection-editor".into()], aur: false });
+                    actions.push(Action::Install { packages: vec!["nm-connection-editor".into()] });
                 }
                 if cmd::exists("nmtui")
                     && widgets::button(ui, ButtonKind::Text, Some(ICON_TERMINAL), "nmtui").clicked()

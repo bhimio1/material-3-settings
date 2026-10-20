@@ -104,6 +104,8 @@ pub fn show(ui: &mut Ui, app: &mut App) {
 
     let mut new_helper = None;
     let os_name = app.os.pretty_name.clone();
+    let cachyos = app.os.is_cachyos();
+    let installed = app.installed.clone();
     common::page(ui, ICON_PACKAGE_2, "Packages", "Updates, cleanup and pacman options.", |ui| {
         if !has_pacman {
             common::banner(ui, ICON_WARNING, &format!("pacman wasn't found. This page manages Arch Linux packages{}.", if os_name.is_empty() { String::new() } else { format!("; this system is {os_name}") }), true, |_| {});
@@ -129,6 +131,39 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                     stat_tile(ui, w, pacman::format_size(s.cache_bytes), "package cache", s.cache_bytes > 5 << 30);
                 });
             }
+        }
+
+        // ------------------------------------------------------- CachyOS
+        if cachyos {
+            card(ui, "CachyOS", |ui| {
+                let repos = match &st.conf_disk {
+                    Some(Ok(text)) => pacman::cachyos_repos(text),
+                    _ => Vec::new(),
+                };
+                let desc = if repos.is_empty() {
+                    "No CachyOS repositories are enabled in pacman.conf.".to_string()
+                } else {
+                    format!("Optimised repositories in use: {}.", repos.join(", "))
+                };
+                let kernel = crate::sys::cmd::run("uname", &["-r"]).unwrap_or_default();
+                row(ui, "Repositories", &desc, |_| {});
+                ui.separator();
+                row(ui, "Kernel", kernel.trim(), |ui| {
+                    tool_button(ui, actions, &installed, "cachyos-kernel-manager", "cachyos-kernel-manager", "Kernel manager");
+                });
+                ui.separator();
+                row(ui, "CachyOS tools", "Welcome app, gaming packages and system tweaks.", |ui| {
+                    tool_button(ui, actions, &installed, "cachyos-hello", "cachyos-hello", "CachyOS Hello");
+                    if !installed.contains("cachyos-gaming-meta")
+                        && widgets::button(ui, ButtonKind::Outlined, Some(ICON_SPORTS_ESPORTS), "Gaming packages")
+                            .on_hover_text("Install cachyos-gaming-meta (Proton-CachyOS, Wine, gamescope and friends)")
+                            .clicked()
+                    {
+                        actions.push(Action::Install { packages: vec!["cachyos-gaming-meta".into()] });
+                    }
+                });
+                ui.add_space(4.0);
+            });
         }
 
         // ------------------------------------------------------- updates
@@ -159,7 +194,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 } else if !installed.contains("pacman-contrib")
                     && widgets::button(ui, ButtonKind::Tonal, Some(ICON_DOWNLOAD), "pacman-contrib").clicked()
                 {
-                    actions.push(Action::Install { packages: vec!["pacman-contrib".into()], aur: false });
+                    actions.push(Action::Install { packages: vec!["pacman-contrib".into()] });
                 }
             });
             if let Some(Ok(list)) = &st.updates.value {
@@ -328,12 +363,17 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 format!("{} active mirror{}. The first ones are tried first.", mirrors.len(), if mirrors.len() == 1 { "" } else { "s" })
             };
             row(ui, pacman::MIRRORLIST, &desc, |ui| {
-                if cmd::exists("reflector") {
+                if cmd::exists("cachyos-rate-mirrors") {
+                    // Ranks the Arch and every CachyOS mirrorlist in one go.
+                    if widgets::button(ui, ButtonKind::Tonal, Some(ICON_SPEED), "Rank mirrors").clicked() {
+                        actions.push(Action::RunInTerminal("sudo cachyos-rate-mirrors".into()));
+                    }
+                } else if cmd::exists("reflector") {
                     if widgets::button(ui, ButtonKind::Tonal, Some(ICON_SPEED), "Rank mirrors").clicked() {
                         actions.push(Action::RunInTerminal("sudo reflector --latest 20 --protocol https --sort rate --save /etc/pacman.d/mirrorlist".into()));
                     }
                 } else if widgets::button(ui, ButtonKind::Outlined, Some(ICON_DOWNLOAD), "Install reflector").clicked() {
-                    actions.push(Action::Install { packages: vec!["reflector".into()], aur: false });
+                    actions.push(Action::Install { packages: vec!["reflector".into()] });
                 }
                 if widgets::icon_button(ui, ICON_REFRESH, "Reload", true).clicked() {
                     load_conf(st);
@@ -393,7 +433,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                                                 actions.push(Action::RunInTerminal(format!("sudo pacman -Rs {}", term::shell_quote(&r.name))));
                                             }
                                         } else if widgets::button(ui, ButtonKind::Tonal, Some(ICON_DOWNLOAD), "Install").clicked() {
-                                            actions.push(Action::Install { packages: vec![r.name.clone()], aur: false });
+                                            actions.push(Action::Install { packages: vec![r.name.clone()] });
                                         }
                                     });
                                 });
@@ -409,5 +449,27 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     if let Some(h) = new_helper {
         app.config.aur_helper = h;
         app.actions.push(Action::ConfigChanged);
+    }
+}
+
+/// Opens a CachyOS tool, or offers to install it.
+fn tool_button(
+    ui: &mut Ui,
+    actions: &mut Actions,
+    installed: &std::collections::HashSet<String>,
+    program: &str,
+    package: &str,
+    label: &str,
+) {
+    if cmd::exists(program) {
+        if widgets::button(ui, ButtonKind::Tonal, Some(ICON_OPEN_IN_NEW), label).clicked() {
+            if let Err(e) = cmd::spawn_detached(program, &[]) {
+                toast(actions, e, ToastKind::Error);
+            }
+        }
+    } else if !installed.contains(package)
+        && widgets::button(ui, ButtonKind::Outlined, Some(ICON_DOWNLOAD), label).clicked()
+    {
+        actions.push(Action::Install { packages: vec![package.to_string()] });
     }
 }

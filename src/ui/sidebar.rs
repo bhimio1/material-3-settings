@@ -71,7 +71,8 @@ pub fn show(ui: &mut Ui, app: &mut App) {
 
             for (group, pages) in NAV {
                 if !group.is_empty() {
-                    section_header(ui, group);
+                    let label = if *group == "Arch Linux" && app.os.is_cachyos() { "CachyOS" } else { group };
+                    section_header(ui, label);
                 }
                 for page in pages.iter() {
                     let selected = current == *page

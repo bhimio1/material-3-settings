@@ -66,6 +66,15 @@ For each one:
 - Symlinked dotfiles (stow, chezmoi) are written through the link, so the link stays.
 - Root-owned files are written through `pkexec`.
 
+## CachyOS
+
+CachyOS is Arch-based, so everything above works there. These parts adapt to it:
+
+- **Installing packages:** each package comes from your configured repos when they have it (CachyOS's own repos carry many packages that are AUR-only on Arch), and from paru or yay otherwise.
+- **Packages page:** a CachyOS card shows the optimised repos you use and the running kernel. It opens the CachyOS Kernel Manager and CachyOS Hello, and installs `cachyos-gaming-meta`. "Rank mirrors" uses `cachyos-rate-mirrors`, which ranks the Arch and CachyOS mirrorlists together.
+- **Power page:** a **CPU scheduler** card switches sched-ext schedulers and modes through `scxctl` (scx_loader), for example scx_lavd in Gaming mode. It also stops them, or restores the default. It appears wherever `scxctl` is installed.
+- **Sidebar:** the "Arch Linux" heading reads "CachyOS".
+
 ## Install
 
 From the AUR, prebuilt or built from source:

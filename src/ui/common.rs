@@ -143,7 +143,6 @@ pub fn require(
         {
             actions.push(Action::Install {
                 packages: vec![package.to_string()],
-                aur: false,
             });
         }
     });
