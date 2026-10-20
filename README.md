@@ -68,6 +68,12 @@ For each one:
 
 ## Install
 
+From the AUR, prebuilt or built from source:
+
+```sh
+paru -S material-3-settings-bin   # or material-3-settings-git
+```
+
 From this repository, with the included PKGBUILD:
 
 ```sh

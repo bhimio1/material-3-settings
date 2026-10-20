@@ -20,7 +20,7 @@ optdepends=(
   'hyprland: Hyprland and display settings'
 )
 provides=('material-3-settings')
-conflicts=('material-3-settings')
+conflicts=('material-3-settings' 'material-3-settings-bin')
 source=("$pkgname::git+$url.git")
 sha256sums=('SKIP')
 
