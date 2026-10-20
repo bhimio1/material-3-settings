@@ -124,4 +124,8 @@ Run the tests with `cargo test`. To refresh the end4-pC schema after an upstream
 python3 scripts/gen_end4_schema.py ~/.config/quickshell/end4-pC/modules/common/Config.qml > assets/end4/schema.json
 ```
 
+## License
+
+MIT, see [LICENSE](LICENSE).
+
 Fonts: Inter (SIL OFL 1.1, see `assets/fonts/LICENSE-Inter.txt`). Icons: Material Symbols, via `egui_material_icons`.

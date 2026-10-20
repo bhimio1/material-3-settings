@@ -3,6 +3,7 @@ name = "material_3_settings"
 version = "0.1.0"
 edition = "2021"
 description = "A Material 3 settings manager for Arch Linux, built with egui"
+license = "MIT"
 
 [[bin]]
 name = "m3-settings"
