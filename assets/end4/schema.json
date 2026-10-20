@@ -1,0 +1,3640 @@
+[
+ {
+  "key": "panelFamily",
+  "type": "string",
+  "default": "ii",
+  "comment": "\"ii\", \"waffle\""
+ },
+ {
+  "key": "policies.ai",
+  "type": "int",
+  "default": 1,
+  "comment": "0: No | 1: Yes | 2: Local"
+ },
+ {
+  "key": "policies.weeb",
+  "type": "int",
+  "default": 1,
+  "comment": "0: No | 1: Open | 2: Closet"
+ },
+ {
+  "key": "ai.systemPrompt",
+  "type": "string",
+  "default": "## Style\n- Use casual tone, don't be formal!\n- Always be brief and to the point, unless asked otherwise\n- Don't repeat the user's question\n- Be approachable: Avoid using overly complicated, domain-specific terms and provide analogies when asked to explain a concept\n\n## Context (ignore when irrelevant)\n- You are a helpful and inspiring sidebar assistant on a {DISTRO} Linux system\n- Desktop environment: {DE}\n- Current date & time: {DATETIME}\n- Focused app: {WINDOWCLASS}\n\n## Presentation\n- Use Markdown features in your response: \n  - **Bold** text to **highlight keywords** in your response\n  - **Split long information into small sections** with h2 headers and a relevant emoji at the start of it (for example `## 🐧 Linux`). Bullet points are preferred over long paragraphs, unless you're offering writing support or instructed otherwise by the user.\n- Asked to compare different options? You should firstly use a table to compare the main aspects, then elaborate or include relevant comments from online forums *after* the table. Make sure to provide a final recommendation for the user's use case!\n- Use LaTeX formatting for mathematical and scientific notations whenever appropriate. Enclose all LaTeX '$$' delimiters. NEVER generate LaTeX code in a latex block unless the user explicitly asks for it. DO NOT use LaTeX for regular documents (resumes, letters, essays, CVs, etc.).\n\nThanks!\n",
+  "comment": ""
+ },
+ {
+  "key": "ai.tool",
+  "type": "string",
+  "default": "functions",
+  "comment": "search, functions, or none"
+ },
+ {
+  "key": "ai.vllmEndpoint",
+  "type": "string",
+  "default": "http://localhost:8000",
+  "comment": ""
+ },
+ {
+  "key": "ai.extraModels",
+  "type": "list",
+  "default": [
+   {
+    "api_format": "openai",
+    "description": "This is a custom model. Edit the config to add more! | Anyway, this is DeepSeek R1 Distill LLaMA 70B",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "homepage": "https://openrouter.ai/deepseek/deepseek-r1-distill-llama-70b:free",
+    "icon": "spark-symbolic",
+    "key_get_link": "https://openrouter.ai/settings/keys",
+    "key_id": "openrouter",
+    "model": "deepseek/deepseek-r1-distill-llama-70b:free",
+    "name": "Custom: DS R1 Dstl. LLaMA 70B",
+    "requires_key": true
+   }
+  ],
+  "comment": ""
+ },
+ {
+  "key": "appearance.uiBackground",
+  "type": "string",
+  "default": "themed",
+  "comment": ""
+ },
+ {
+  "key": "appearance.extraBackgroundTint",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "appearance.fakeScreenRounding",
+  "type": "int",
+  "default": 2,
+  "comment": "0: None | 1: Always | 2: When not fullscreen"
+ },
+ {
+  "key": "appearance.fonts.main",
+  "type": "string",
+  "default": "Google Sans Flex",
+  "comment": ""
+ },
+ {
+  "key": "appearance.fonts.numbers",
+  "type": "string",
+  "default": "Google Sans Flex",
+  "comment": ""
+ },
+ {
+  "key": "appearance.fonts.title",
+  "type": "string",
+  "default": "Google Sans Flex",
+  "comment": ""
+ },
+ {
+  "key": "appearance.fonts.iconNerd",
+  "type": "string",
+  "default": "JetBrains Mono NF",
+  "comment": ""
+ },
+ {
+  "key": "appearance.fonts.monospace",
+  "type": "string",
+  "default": "JetBrains Mono NF",
+  "comment": ""
+ },
+ {
+  "key": "appearance.fonts.reading",
+  "type": "string",
+  "default": "Readex Pro",
+  "comment": ""
+ },
+ {
+  "key": "appearance.fonts.expressive",
+  "type": "string",
+  "default": "Space Grotesk",
+  "comment": ""
+ },
+ {
+  "key": "appearance.transparency.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "appearance.transparency.automatic",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "appearance.transparency.backgroundTransparency",
+  "type": "real",
+  "default": 0.11,
+  "comment": ""
+ },
+ {
+  "key": "appearance.transparency.contentTransparency",
+  "type": "real",
+  "default": 0.57,
+  "comment": ""
+ },
+ {
+  "key": "appearance.wallpaperTheming.enableAppsAndShell",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "appearance.wallpaperTheming.enableQtApps",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "appearance.wallpaperTheming.enableTerminal",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "appearance.wallpaperTheming.terminalGenerationProps.harmony",
+  "type": "real",
+  "default": 0.6,
+  "comment": ""
+ },
+ {
+  "key": "appearance.wallpaperTheming.terminalGenerationProps.harmonizeThreshold",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "appearance.wallpaperTheming.terminalGenerationProps.termFgBoost",
+  "type": "real",
+  "default": 0.35,
+  "comment": ""
+ },
+ {
+  "key": "appearance.wallpaperTheming.terminalGenerationProps.forceDarkMode",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "appearance.palette.type",
+  "type": "string",
+  "default": "auto",
+  "comment": "Allowed: auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot"
+ },
+ {
+  "key": "appearance.palette.accentColor",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "appearance.palette.namedScheme",
+  "type": "string",
+  "default": "",
+  "comment": "\"\" = from wallpaper. Allowed: any file name in scripts/colors/schemes (gruvbox)"
+ },
+ {
+  "key": "appearance.palette.namedSchemePrimary",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "appearance.palette.namedSchemeSecondary",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "audio.protection.enable",
+  "type": "bool",
+  "default": false,
+  "comment": "Prevent sudden bangs"
+ },
+ {
+  "key": "audio.protection.maxAllowedIncrease",
+  "type": "real",
+  "default": 10.0,
+  "comment": ""
+ },
+ {
+  "key": "audio.protection.maxAllowed",
+  "type": "real",
+  "default": 99.0,
+  "comment": ""
+ },
+ {
+  "key": "profile.avatarPath",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "profile.avatarPicture",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "profile.descriptionText",
+  "type": "string",
+  "default": "::distro::",
+  "comment": ""
+ },
+ {
+  "key": "profile.displayName",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "profile.onlinePresets",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "profile.uploadGuideSeen",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.animations.animation",
+  "type": "string",
+  "default": "normal",
+  "comment": ""
+ },
+ {
+  "key": "hyprland.animations.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.autostartApps.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.autostartApps.apps",
+  "type": "list",
+  "default": [],
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.rounding",
+  "type": "int",
+  "default": 22,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.activeOpacity",
+  "type": "real",
+  "default": 1.0,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.inactiveOpacity",
+  "type": "real",
+  "default": 0.9,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.blur.enabled",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.blur.size",
+  "type": "int",
+  "default": 1,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.blur.passes",
+  "type": "int",
+  "default": 3,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.shadow.enabled",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.decoration.shadow.range",
+  "type": "int",
+  "default": 4,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.borderSize",
+  "type": "int",
+  "default": 1,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.gapsIn",
+  "type": "int",
+  "default": 2,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.gapsOut",
+  "type": "int",
+  "default": 5,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.layout",
+  "type": "string",
+  "default": "dwindle",
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.borderColor.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.borderColor.activeRole",
+  "type": "string",
+  "default": "layer0Border",
+  "comment": "Palette roles, resolved by Appearance.getColorFromName()"
+ },
+ {
+  "key": "hyprland.general.borderColor.inactiveRole",
+  "type": "string",
+  "default": "layer0Border",
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.borderColor.activeOpacity",
+  "type": "real",
+  "default": 0.47,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.general.borderColor.inactiveOpacity",
+  "type": "real",
+  "default": 0.2,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.idle.lock",
+  "type": "int",
+  "default": 300,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.idle.screenOff",
+  "type": "int",
+  "default": 600,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.idle.suspend",
+  "type": "int",
+  "default": 10800,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.kbLayout",
+  "type": "string",
+  "default": "us",
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.numlock",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.repeatDelay",
+  "type": "int",
+  "default": 250,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.repeatRate",
+  "type": "int",
+  "default": 35,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.followMouse",
+  "type": "int",
+  "default": 1,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.touchpad.naturalScroll",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.touchpad.disableWhileTyping",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.touchpad.clickfingerBehavior",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.input.touchpad.scrollFactor",
+  "type": "real",
+  "default": 0.7,
+  "comment": ""
+ },
+ {
+  "key": "hyprland.misc.focusOnActivate",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "apps.bluetooth",
+  "type": "string",
+  "default": "kcmshell6 kcm_bluetooth",
+  "comment": ""
+ },
+ {
+  "key": "apps.changePassword",
+  "type": "string",
+  "default": "kitty -1 --hold=yes fish -i -c 'passwd'",
+  "comment": ""
+ },
+ {
+  "key": "apps.network",
+  "type": "string",
+  "default": "kcmshell6 kcm_networkmanagement",
+  "comment": ""
+ },
+ {
+  "key": "apps.manageUser",
+  "type": "string",
+  "default": "kcmshell6 kcm_users",
+  "comment": ""
+ },
+ {
+  "key": "apps.networkEthernet",
+  "type": "string",
+  "default": "kcmshell6 kcm_networkmanagement",
+  "comment": ""
+ },
+ {
+  "key": "apps.taskManager",
+  "type": "string",
+  "default": "plasma-systemmonitor --page-name Processes",
+  "comment": ""
+ },
+ {
+  "key": "apps.terminal",
+  "type": "string",
+  "default": "kitty -1",
+  "comment": "This is only for shell actions"
+ },
+ {
+  "key": "apps.update",
+  "type": "string",
+  "default": "kitty -1 --hold=yes fish -i -c 'pkexec pacman -Syu'",
+  "comment": ""
+ },
+ {
+  "key": "apps.volumeMixer",
+  "type": "string",
+  "default": null,
+  "comment": ""
+ },
+ {
+  "key": "settings.style",
+  "type": "string",
+  "default": "default",
+  "comment": "default - minimal - dashboard"
+ },
+ {
+  "key": "settings.borderSize",
+  "type": "real",
+  "default": 1.0,
+  "comment": ""
+ },
+ {
+  "key": "settings.animationSpeed",
+  "type": "real",
+  "default": 1.0,
+  "comment": ""
+ },
+ {
+  "key": "settings.borderColor",
+  "type": "string",
+  "default": "layer0Border",
+  "comment": ""
+ },
+ {
+  "key": "settings.collapsedSections",
+  "type": "list",
+  "default": [],
+  "comment": ""
+ },
+ {
+  "key": "background.lockWall",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.widgetsLocked",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.collage.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.collage.gap",
+  "type": "int",
+  "default": 30,
+  "comment": ""
+ },
+ {
+  "key": "background.collage.margin",
+  "type": "int",
+  "default": 30,
+  "comment": ""
+ },
+ {
+  "key": "background.collage.radius",
+  "type": "int",
+  "default": 30,
+  "comment": ""
+ },
+ {
+  "key": "background.collage.primaryId",
+  "type": "int",
+  "default": 1,
+  "comment": ""
+ },
+ {
+  "key": "background.collage.nextId",
+  "type": "int",
+  "default": 2,
+  "comment": ""
+ },
+ {
+  "key": "background.collage.tree",
+  "type": "string",
+  "default": "{\"t\":\"leaf\",\"id\":1,\"img\":\"\"}",
+  "comment": ""
+ },
+ {
+  "key": "background.showGrid",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.showBlur",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.blurRadius",
+  "type": "real",
+  "default": 32.0,
+  "comment": ""
+ },
+ {
+  "key": "background.splitRatio",
+  "type": "string",
+  "default": "100",
+  "comment": "25 50 100"
+ },
+ {
+  "key": "background.splitSide",
+  "type": "string",
+  "default": "left",
+  "comment": ""
+ },
+ {
+  "key": "background.showSnapLines",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.blurWidgets",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.blurRadius",
+  "type": "real",
+  "default": 32.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.glass.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.shadow",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.menuHidden",
+  "type": "list",
+  "default": [],
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.showOnlyWhenLocked",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.placementStrategy",
+  "type": "string",
+  "default": "leastBusy",
+  "comment": "\"free\", \"leastBusy\", \"mostBusy\""
+ },
+ {
+  "key": "background.widgets.clock.x",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.style",
+  "type": "string",
+  "default": "cookie",
+  "comment": "Options: \"cookie\", \"digital\", \"daily\", \"pixel\""
+ },
+ {
+  "key": "background.widgets.clock.color",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.styleLocked",
+  "type": "string",
+  "default": "cookie",
+  "comment": "Options: \"cookie\", \"digital\", \"daily\", \"pixel\""
+ },
+ {
+  "key": "background.widgets.clock.cookie.aiStyling",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.cookie.sides",
+  "type": "int",
+  "default": 14,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.cookie.dialNumberStyle",
+  "type": "string",
+  "default": "full",
+  "comment": "Options: \"dots\" , \"numbers\", \"full\" , \"none\""
+ },
+ {
+  "key": "background.widgets.clock.cookie.hourHandStyle",
+  "type": "string",
+  "default": "fill",
+  "comment": "Options: \"classic\", \"fill\", \"hollow\", \"hide\""
+ },
+ {
+  "key": "background.widgets.clock.cookie.minuteHandStyle",
+  "type": "string",
+  "default": "medium",
+  "comment": "Options \"classic\", \"thin\", \"medium\", \"bold\", \"hide\""
+ },
+ {
+  "key": "background.widgets.clock.cookie.secondHandStyle",
+  "type": "string",
+  "default": "dot",
+  "comment": "Options: \"dot\", \"line\", \"classic\", \"hide\""
+ },
+ {
+  "key": "background.widgets.clock.cookie.dateStyle",
+  "type": "string",
+  "default": "bubble",
+  "comment": "Options: \"border\", \"rect\", \"bubble\" , \"hide\""
+ },
+ {
+  "key": "background.widgets.clock.cookie.timeIndicators",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.cookie.hourMarks",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.cookie.dateInClock",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.cookie.constantlyRotate",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.cookie.useSineCookie",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.adaptiveAlignment",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.showDate",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.animateChange",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.vertical",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.font.family",
+  "type": "string",
+  "default": "Google Sans Flex",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.font.weight",
+  "type": "real",
+  "default": 350.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.font.width",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.font.size",
+  "type": "real",
+  "default": 90.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.digital.font.roundness",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.daily.variant",
+  "type": "string",
+  "default": "badge",
+  "comment": "Options: \"badge\", \"morning\", \"script\", \"bold\""
+ },
+ {
+  "key": "background.widgets.clock.pixel.orientation",
+  "type": "string",
+  "default": "vertical",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.quote.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.quote.text",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.clock.quote.followClock",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.weather.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.weather.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": "\"free\", \"leastBusy\", \"mostBusy\""
+ },
+ {
+  "key": "background.widgets.weather.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.weather.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.weather.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.weather.sizeMode",
+  "type": "string",
+  "default": "1x3",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.weather.expanded",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.calendar.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.calendar.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": "\"free\", \"leastBusy\", \"mostBusy\""
+ },
+ {
+  "key": "background.widgets.calendar.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.calendar.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.calendar.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.calendar.sizeMode",
+  "type": "string",
+  "default": "2x2",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.timezones",
+  "type": "list",
+  "default": [
+   "Australia/Sydney",
+   "Asia/Tokyo",
+   "Europe/London",
+   "America/New_York"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.sizeMode",
+  "type": "string",
+  "default": "2x2",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.vertical",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.worldClock.clockCount",
+  "type": "int",
+  "default": 4,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.notes.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.notes.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.notes.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.notes.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.notes.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.todo.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.todo.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.todo.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.todo.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.todo.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.userCard.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.userCard.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.userCard.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.userCard.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.userCard.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.userCard.sizeMode",
+  "type": "string",
+  "default": "1x2",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.images.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.images.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.images.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.images.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.images.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.visualizer.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.visualizer.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.visualizer.x",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.visualizer.y",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.visualizer.z",
+  "type": "real",
+  "default": -1000.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.visualizer.style",
+  "type": "string",
+  "default": "bars",
+  "comment": "\"bars\", \"mirror\", \"aurora\", \"ring\", \"dots\""
+ },
+ {
+  "key": "background.widgets.visualizer.colorSource",
+  "type": "string",
+  "default": "theme",
+  "comment": "\"theme\", \"cover\""
+ },
+ {
+  "key": "background.widgets.visualizer.sensitivity",
+  "type": "real",
+  "default": 1.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.visualizer.height",
+  "type": "int",
+  "default": 260,
+  "comment": "mirror, aurora and dots"
+ },
+ {
+  "key": "background.widgets.visualizer.ringSize",
+  "type": "int",
+  "default": 380,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.path",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.shape",
+  "type": "string",
+  "default": "Cookie4Sided",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customImage.size",
+  "type": "real",
+  "default": 200.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.imageCard.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.imageCard.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.imageCard.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.imageCard.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.imageCard.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.imageCard.path",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.imageCard.sizeMode",
+  "type": "string",
+  "default": "1x2",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.items",
+  "type": "list",
+  "default": [],
+  "comment": "if someone sees this and wants to add more stickers, make a PR too lazy"
+ },
+ {
+  "key": "background.widgets.sticker.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.path",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.size",
+  "type": "real",
+  "default": 200.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.rotation",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.sticker.outlineColor",
+  "type": "string",
+  "default": "#ffffff",
+  "comment": "dont work =("
+ },
+ {
+  "key": "background.widgets.sticker.outlineWidth",
+  "type": "real",
+  "default": 8.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.resources.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.resources.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.resources.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.resources.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.resources.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.resources.vertical",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.timers.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.timers.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.timers.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.timers.y",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.timers.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.timers.vertical",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.showControls",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.showLyrics",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.showTitles",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.backgroundShape",
+  "type": "string",
+  "default": "Cookie4Sided",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": "\"free\", \"leastBusy\", \"mostBusy\""
+ },
+ {
+  "key": "background.widgets.media.x",
+  "type": "real",
+  "default": 800.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.y",
+  "type": "real",
+  "default": 500.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.media.sizeMode",
+  "type": "string",
+  "default": "1x3",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.placementStrategy",
+  "type": "string",
+  "default": "free",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.x",
+  "type": "real",
+  "default": 400.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.y",
+  "type": "real",
+  "default": 300.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.z",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.content",
+  "type": "string",
+  "default": "Hello world",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.fontFamily",
+  "type": "string",
+  "default": "Caveat",
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.fontSize",
+  "type": "int",
+  "default": 72,
+  "comment": ""
+ },
+ {
+  "key": "background.widgets.customText.color",
+  "type": "string",
+  "default": "",
+  "comment": "\"\" = automatic, otherwise an Appearance color name"
+ },
+ {
+  "key": "background.widgets.customText.alignment",
+  "type": "string",
+  "default": "center",
+  "comment": "\"left\", \"center\", \"right\""
+ },
+ {
+  "key": "background.widgets.customText.shadow",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.liveWallpaper.pauseOnBattery",
+  "type": "bool",
+  "default": false,
+  "comment": "Pause as soon as the charger is out"
+ },
+ {
+  "key": "background.liveWallpaper.pauseBelowPercent",
+  "type": "real",
+  "default": 0.0,
+  "comment": "Or only under this charge, 0 to ignore"
+ },
+ {
+  "key": "background.screenList",
+  "type": "list",
+  "default": [],
+  "comment": ""
+ },
+ {
+  "key": "background.wallpaperPath",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.centeredWallpaper",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.centeredWallpaperShape",
+  "type": "string",
+  "default": "Cookie7Sided",
+  "comment": ""
+ },
+ {
+  "key": "background.centeredWallpaperSize",
+  "type": "int",
+  "default": 400,
+  "comment": ""
+ },
+ {
+  "key": "background.centeredWallpaperColor",
+  "type": "string",
+  "default": "primaryContainer",
+  "comment": ""
+ },
+ {
+  "key": "background.centeredWallpaperOnlyWhenLocked",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.centeredWallpaperImage",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.wallpaperAnimation",
+  "type": "string",
+  "default": "magic",
+  "comment": ""
+ },
+ {
+  "key": "background.enableWallpaperPreview",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.thumbnailPath",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "background.hideWhenFullscreen",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.parallax.vertical",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.parallax.autoVertical",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "background.parallax.enableWorkspace",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.parallax.workspaceZoom",
+  "type": "real",
+  "default": 1.0,
+  "comment": "Relative to wallpaper size"
+ },
+ {
+  "key": "background.parallax.enableSidebar",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "background.parallax.widgetsFactor",
+  "type": "real",
+  "default": 1.2,
+  "comment": ""
+ },
+ {
+  "key": "bar.autoHide.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.autoHide.hoverRegionWidth",
+  "type": "int",
+  "default": 2,
+  "comment": ""
+ },
+ {
+  "key": "bar.autoHide.pushWindows",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.autoHide.showWhenPressingSuper.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.autoHide.showWhenPressingSuper.delay",
+  "type": "int",
+  "default": 140,
+  "comment": ""
+ },
+ {
+  "key": "bar.showFrame",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.frameThickness",
+  "type": "real",
+  "default": 4.0,
+  "comment": ""
+ },
+ {
+  "key": "bar.frameColor",
+  "type": "string",
+  "default": "black",
+  "comment": ""
+ },
+ {
+  "key": "bar.followFrameColor",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.centerOnlyReserveFrame",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.bottom",
+  "type": "bool",
+  "default": false,
+  "comment": "Instead of top"
+ },
+ {
+  "key": "bar.cornerStyle",
+  "type": "int",
+  "default": 0,
+  "comment": "0: Hug | 1: Float | 2: Plain rectangle | 3: M3 | 4: M3 Hug | 5: Panel | 6: Split Hug"
+ },
+ {
+  "key": "bar.groupColor",
+  "type": "string",
+  "default": "layer1",
+  "comment": ""
+ },
+ {
+  "key": "bar.floatStyleShadow",
+  "type": "bool",
+  "default": true,
+  "comment": "Show shadow behind bar when cornerStyle == 1 (Float)"
+ },
+ {
+  "key": "bar.borderless",
+  "type": "string",
+  "default": "pills",
+  "comment": ""
+ },
+ {
+  "key": "bar.widgetStyles",
+  "type": "list",
+  "default": [],
+  "comment": ""
+ },
+ {
+  "key": "bar.topLeftIcon",
+  "type": "string",
+  "default": "spark",
+  "comment": "Options: \"distro\" or any icon name in ~/.config/quickshell/ii/assets/icons"
+ },
+ {
+  "key": "bar.showBackground",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.verbose",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.vertical",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.style",
+  "type": "string",
+  "default": "filled",
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.showValue",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.alwaysShowSwap",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.alwaysShowCpu",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.alwaysShowCpuTemp",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.alwaysShowDisk",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.alwaysShowRam",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.memoryWarningThreshold",
+  "type": "int",
+  "default": 95,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.swapWarningThreshold",
+  "type": "int",
+  "default": 85,
+  "comment": ""
+ },
+ {
+  "key": "bar.resources.cpuWarningThreshold",
+  "type": "int",
+  "default": 90,
+  "comment": ""
+ },
+ {
+  "key": "bar.aiUsage.tokenLimit",
+  "type": "int",
+  "default": 1000000,
+  "comment": ""
+ },
+ {
+  "key": "bar.aiUsage.updateInterval",
+  "type": "int",
+  "default": 60,
+  "comment": ""
+ },
+ {
+  "key": "bar.dynamicIsland.visualizerStyle",
+  "type": "string",
+  "default": "dots",
+  "comment": "\"dots\", \"wave\", \"none\""
+ },
+ {
+  "key": "bar.dynamicIsland.showMediaControls",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.dynamicIsland.leftWidget",
+  "type": "string",
+  "default": "none",
+  "comment": ""
+ },
+ {
+  "key": "bar.dynamicIsland.rightWidget",
+  "type": "string",
+  "default": "none",
+  "comment": ""
+ },
+ {
+  "key": "bar.divider.style",
+  "type": "string",
+  "default": "rect",
+  "comment": "rect - dot - space"
+ },
+ {
+  "key": "bar.divider.spacing",
+  "type": "int",
+  "default": 20,
+  "comment": ""
+ },
+ {
+  "key": "bar.layouts.leftLayout",
+  "type": "list",
+  "default": [
+   "launcherButton",
+   "workspaces",
+   "activeWindow"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "bar.layouts.middleLayout",
+  "type": "list",
+  "default": [
+   "clockWidget"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "bar.layouts.rightLayout",
+  "type": "list",
+  "default": [
+   "sysTray",
+   "utilButtons",
+   "systemIcons",
+   "powerButton"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "bar.screenList",
+  "type": "list",
+  "default": [],
+  "comment": "List of names, like \"eDP-1\", find out with 'hyprctl monitors' command"
+ },
+ {
+  "key": "bar.battery.style",
+  "type": "string",
+  "default": "bar",
+  "comment": ""
+ },
+ {
+  "key": "bar.battery.showPercentage",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.battery.showCharging",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showScreenSnip",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showColorPicker",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showMicToggle",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showKeyboardToggle",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showWallpaperToggle",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showDarkModeToggle",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showPerformanceProfileToggle",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.showScreenRecord",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.utilButtons.isRecording",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.workspaces.monochromeIcons",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.workspaces.shown",
+  "type": "int",
+  "default": 10,
+  "comment": ""
+ },
+ {
+  "key": "bar.workspaces.showAppIcons",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.workspaces.indicatorStyle",
+  "type": "string",
+  "default": "dot",
+  "comment": "\"dot\" or \"icon\""
+ },
+ {
+  "key": "bar.workspaces.style",
+  "type": "string",
+  "default": "default",
+  "comment": "\"default\", \"gnome\", \"dots\", \"ticks\""
+ },
+ {
+  "key": "bar.workspaces.alwaysShowNumbers",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.workspaces.showNumberDelay",
+  "type": "int",
+  "default": 300,
+  "comment": "milliseconds"
+ },
+ {
+  "key": "bar.workspaces.numberMap",
+  "type": "list",
+  "default": [
+   "1",
+   "2"
+  ],
+  "comment": "Characters to show instead of numbers on workspace indicator"
+ },
+ {
+  "key": "bar.workspaces.useNerdFont",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.weather.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.weather.enableGPS",
+  "type": "bool",
+  "default": true,
+  "comment": "gps based location"
+ },
+ {
+  "key": "bar.weather.city",
+  "type": "string",
+  "default": "",
+  "comment": "When 'enableGPS' is false"
+ },
+ {
+  "key": "bar.weather.useUSCS",
+  "type": "bool",
+  "default": false,
+  "comment": "Instead of metric (SI) units"
+ },
+ {
+  "key": "bar.weather.fetchInterval",
+  "type": "int",
+  "default": 10,
+  "comment": "minutes"
+ },
+ {
+  "key": "bar.indicators.notifications.showUnreadCount",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.tooltips.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "bar.tooltips.clickToShow",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.tooltips.style",
+  "type": "string",
+  "default": "default",
+  "comment": ""
+ },
+ {
+  "key": "bar.media.preferredPlayer",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "bar.media.alwaysVisible",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.media.onlyTitle",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "bar.media.maxWidth",
+  "type": "int",
+  "default": 280,
+  "comment": ""
+ },
+ {
+  "key": "bar.media.minWidth",
+  "type": "int",
+  "default": 100,
+  "comment": ""
+ },
+ {
+  "key": "bar.media.showLyrics",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "battery.low",
+  "type": "int",
+  "default": 20,
+  "comment": ""
+ },
+ {
+  "key": "battery.critical",
+  "type": "int",
+  "default": 5,
+  "comment": ""
+ },
+ {
+  "key": "battery.full",
+  "type": "int",
+  "default": 101,
+  "comment": ""
+ },
+ {
+  "key": "battery.automaticSuspend",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "battery.suspend",
+  "type": "int",
+  "default": 3,
+  "comment": ""
+ },
+ {
+  "key": "battery.peripheralLow",
+  "type": "int",
+  "default": 20,
+  "comment": ""
+ },
+ {
+  "key": "battery.peripheralCritical",
+  "type": "int",
+  "default": 5,
+  "comment": ""
+ },
+ {
+  "key": "battery.peripheralNotify",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "calendar.locale",
+  "type": "string",
+  "default": "en-GB",
+  "comment": ""
+ },
+ {
+  "key": "conflictKiller.autoKillNotificationDaemons",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "conflictKiller.autoKillTrays",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "crosshair.code",
+  "type": "string",
+  "default": "0;P;d;1;0l;10;0o;2;1b;0",
+  "comment": "Valorant crosshair format. Use https://www.vcrdb.net/builder"
+ },
+ {
+  "key": "dock.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "dock.showBackground",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "dock.style",
+  "type": "string",
+  "default": "float",
+  "comment": "float | hug"
+ },
+ {
+  "key": "dock.position",
+  "type": "string",
+  "default": "bottom",
+  "comment": "bottom | left | right"
+ },
+ {
+  "key": "dock.showBorder",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "dock.borderWidth",
+  "type": "real",
+  "default": 1.0,
+  "comment": ""
+ },
+ {
+  "key": "dock.borderColor",
+  "type": "string",
+  "default": "layer0Border",
+  "comment": ""
+ },
+ {
+  "key": "dock.backgroundColor",
+  "type": "string",
+  "default": "layer0",
+  "comment": ""
+ },
+ {
+  "key": "dock.radius",
+  "type": "real",
+  "default": 23.0,
+  "comment": ""
+ },
+ {
+  "key": "dock.followFrameColor",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "dock.showPreviews",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "dock.iconSize",
+  "type": "real",
+  "default": 33.0,
+  "comment": ""
+ },
+ {
+  "key": "dock.iconSpacing",
+  "type": "real",
+  "default": 0.0,
+  "comment": ""
+ },
+ {
+  "key": "dock.showPinButton",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "dock.showAppsButton",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "dock.showMedia",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "dock.monochromeIcons",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "dock.height",
+  "type": "real",
+  "default": 60.0,
+  "comment": ""
+ },
+ {
+  "key": "dock.magnification",
+  "type": "real",
+  "default": 1.2,
+  "comment": ""
+ },
+ {
+  "key": "dock.magnify",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "dock.hoverRegionHeight",
+  "type": "real",
+  "default": 2.0,
+  "comment": ""
+ },
+ {
+  "key": "dock.pinnedOnStartup",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "dock.hoverToReveal",
+  "type": "bool",
+  "default": true,
+  "comment": "When false, only reveals on empty workspace"
+ },
+ {
+  "key": "dock.pinnedApps",
+  "type": "list",
+  "default": null,
+  "comment": "IDs of pinned entries"
+ },
+ {
+  "key": "dock.ignoredAppRegexes",
+  "type": "list",
+  "default": [],
+  "comment": ""
+ },
+ {
+  "key": "interactions.scrolling.fasterTouchpadScroll",
+  "type": "bool",
+  "default": true,
+  "comment": "Apply shared touchpad sensitivity to scrollable views"
+ },
+ {
+  "key": "interactions.scrolling.touchpadSensitivity",
+  "type": "real",
+  "default": 3.5,
+  "comment": "Both values multiply direct pixel movement and the angle fallback."
+ },
+ {
+  "key": "interactions.scrolling.touchpadScrollFactor",
+  "type": "real",
+  "default": 1.0,
+  "comment": ""
+ },
+ {
+  "key": "interactions.scrolling.flingFriction",
+  "type": "real",
+  "default": 0.002,
+  "comment": "Legacy factors > 10 are divided by 450 to preserve relative preferences and per-list ratios, not the old absolute speed. Legacy fling/bounce options retained for config compatibility; direct touchpad tracking no longer adds inertia after release."
+ },
+ {
+  "key": "interactions.scrolling.flingStopThreshold",
+  "type": "real",
+  "default": 0.01,
+  "comment": ""
+ },
+ {
+  "key": "interactions.scrolling.bounceDamping",
+  "type": "real",
+  "default": 0.3,
+  "comment": ""
+ },
+ {
+  "key": "interactions.scrolling.wheelScrollAmount",
+  "type": "int",
+  "default": 100,
+  "comment": "Legacy mouse options retained for config compatibility only. Native Qt scrolling does not use these or per-list boosts."
+ },
+ {
+  "key": "interactions.scrolling.wheelDurationMin",
+  "type": "int",
+  "default": 200,
+  "comment": ""
+ },
+ {
+  "key": "interactions.scrolling.wheelDurationMax",
+  "type": "int",
+  "default": 400,
+  "comment": ""
+ },
+ {
+  "key": "interactions.scrolling.mouseScrollDeltaThreshold",
+  "type": "int",
+  "default": 120,
+  "comment": ""
+ },
+ {
+  "key": "interactions.scrolling.mouseScrollFactor",
+  "type": "real",
+  "default": 1.0,
+  "comment": ""
+ },
+ {
+  "key": "interactions.deadPixelWorkaround.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "language.ui",
+  "type": "string",
+  "default": "auto",
+  "comment": "UI language. \"auto\" for system locale, or specific language code like \"zh_CN\", \"en_US\""
+ },
+ {
+  "key": "language.translator.engine",
+  "type": "string",
+  "default": "auto",
+  "comment": "Run `trans -list-engines` for available engines. auto should use google"
+ },
+ {
+  "key": "language.translator.targetLanguage",
+  "type": "string",
+  "default": "auto",
+  "comment": "Run `trans -list-all` for available languages"
+ },
+ {
+  "key": "language.translator.sourceLanguage",
+  "type": "string",
+  "default": "auto",
+  "comment": ""
+ },
+ {
+  "key": "launcher.pinnedApps",
+  "type": "list",
+  "default": [
+   "org.kde.dolphin",
+   "kitty",
+   "cmake-gui"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "light.night.automatic",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "light.night.from",
+  "type": "string",
+  "default": "19:00",
+  "comment": "Format: \"HH:mm\", 24-hour time"
+ },
+ {
+  "key": "light.night.to",
+  "type": "string",
+  "default": "06:30",
+  "comment": "Format: \"HH:mm\", 24-hour time"
+ },
+ {
+  "key": "light.night.colorTemperature",
+  "type": "int",
+  "default": 5000,
+  "comment": ""
+ },
+ {
+  "key": "light.antiFlashbang.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "lock.useHyprlock",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "lock.launchOnStartup",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "lock.showWidgets",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "lock.showMedia",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "lock.showToolbars",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "lock.blur.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "lock.blur.radius",
+  "type": "real",
+  "default": 100.0,
+  "comment": ""
+ },
+ {
+  "key": "lock.blur.extraZoom",
+  "type": "real",
+  "default": 1.1,
+  "comment": ""
+ },
+ {
+  "key": "lock.blur.size",
+  "type": "int",
+  "default": 20,
+  "comment": ""
+ },
+ {
+  "key": "lock.centerClock",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "lock.showLockedText",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "lock.security.unlockKeyring",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "lock.security.requirePasswordToPower",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "lock.materialShapeChars",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "media.filterDuplicatePlayers",
+  "type": "bool",
+  "default": true,
+  "comment": "Attempt to remove dupes (the aggregator playerctl one and browsers' native ones when there's plasma browser integration)"
+ },
+ {
+  "key": "networking.userAgent",
+  "type": "string",
+  "default": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+  "comment": ""
+ },
+ {
+  "key": "notifications.timeout",
+  "type": "int",
+  "default": 7000,
+  "comment": ""
+ },
+ {
+  "key": "notifications.position",
+  "type": "string",
+  "default": "top_right",
+  "comment": ""
+ },
+ {
+  "key": "osd.timeout",
+  "type": "int",
+  "default": 1000,
+  "comment": ""
+ },
+ {
+  "key": "osk.layout",
+  "type": "string",
+  "default": "qwerty_full",
+  "comment": ""
+ },
+ {
+  "key": "osk.pinnedOnStartup",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "overlay.openingZoomAnimation",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "overlay.darkenScreen",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "overlay.clickthroughOpacity",
+  "type": "real",
+  "default": 0.8,
+  "comment": ""
+ },
+ {
+  "key": "overlay.floatingImage.imageSource",
+  "type": "string",
+  "default": "https://media.tenor.com/H5U5bJzj3oAAAAAi/kukuru.gif",
+  "comment": ""
+ },
+ {
+  "key": "overlay.floatingImage.scale",
+  "type": "real",
+  "default": 0.5,
+  "comment": ""
+ },
+ {
+  "key": "overview.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "overview.style",
+  "type": "string",
+  "default": "default",
+  "comment": ""
+ },
+ {
+  "key": "overview.scale",
+  "type": "real",
+  "default": 0.18,
+  "comment": "Relative to screen size"
+ },
+ {
+  "key": "overview.rows",
+  "type": "real",
+  "default": 2.0,
+  "comment": ""
+ },
+ {
+  "key": "overview.columns",
+  "type": "real",
+  "default": 5.0,
+  "comment": ""
+ },
+ {
+  "key": "overview.orderRightLeft",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "overview.orderBottomUp",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "overview.centerIcons",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.targetRegions.windows",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.targetRegions.layers",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.targetRegions.content",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.targetRegions.showLabel",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.targetRegions.opacity",
+  "type": "real",
+  "default": 0.3,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.targetRegions.contentRegionOpacity",
+  "type": "real",
+  "default": 0.8,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.targetRegions.selectionPadding",
+  "type": "int",
+  "default": 5,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.rect.showAimLines",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.circle.strokeWidth",
+  "type": "int",
+  "default": 6,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.circle.padding",
+  "type": "int",
+  "default": 10,
+  "comment": ""
+ },
+ {
+  "key": "regionSelector.annotation.useSatty",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "resources.updateInterval",
+  "type": "int",
+  "default": 3000,
+  "comment": ""
+ },
+ {
+  "key": "resources.historyLength",
+  "type": "int",
+  "default": 60,
+  "comment": ""
+ },
+ {
+  "key": "tray.monochromeIcons",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "tray.showItemId",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "tray.invertPinnedItems",
+  "type": "bool",
+  "default": true,
+  "comment": "Makes the below a whitelist for the tray and blacklist for the pinned area"
+ },
+ {
+  "key": "tray.pinnedItems",
+  "type": "list",
+  "default": [
+   "Fcitx"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "tray.filterPassive",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "musicRecognition.timeout",
+  "type": "int",
+  "default": 16,
+  "comment": ""
+ },
+ {
+  "key": "musicRecognition.interval",
+  "type": "int",
+  "default": 4,
+  "comment": ""
+ },
+ {
+  "key": "search.nonAppResultDelay",
+  "type": "int",
+  "default": 30,
+  "comment": "This prevents lagging when typing"
+ },
+ {
+  "key": "search.engineBaseUrl",
+  "type": "string",
+  "default": "https://www.google.com/search?q=",
+  "comment": ""
+ },
+ {
+  "key": "search.excludedSites",
+  "type": "list",
+  "default": [
+   "quora.com",
+   "facebook.com"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "search.clipboardPins",
+  "type": "list",
+  "default": [],
+  "comment": ""
+ },
+ {
+  "key": "search.clipboardPreviewPopup",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "search.sloppy",
+  "type": "bool",
+  "default": false,
+  "comment": "Uses levenshtein distance based scoring instead of fuzzy sort. Very weird."
+ },
+ {
+  "key": "search.prefix.showDefaultActionsWithoutPrefix",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.action",
+  "type": "string",
+  "default": "/",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.app",
+  "type": "string",
+  "default": ">",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.clipboard",
+  "type": "string",
+  "default": ";",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.emojis",
+  "type": "string",
+  "default": ":",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.keybinds",
+  "type": "string",
+  "default": "<",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.symbols",
+  "type": "string",
+  "default": ".",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.math",
+  "type": "string",
+  "default": "=",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.shellCommand",
+  "type": "string",
+  "default": "$",
+  "comment": ""
+ },
+ {
+  "key": "search.prefix.webSearch",
+  "type": "string",
+  "default": "?",
+  "comment": ""
+ },
+ {
+  "key": "search.imageSearch.imageSearchEngineBaseUrl",
+  "type": "string",
+  "default": "https://lens.google.com/uploadbyurl?url=",
+  "comment": ""
+ },
+ {
+  "key": "search.imageSearch.useCircleSelection",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.sectionOrder",
+  "type": "list",
+  "default": [
+   "banner",
+   "quickToggles",
+   "sliders",
+   "media",
+   "notifications",
+   "bottom"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "sidebar.banner",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.bottomGroup",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.mediaPlayer",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.bannerImage",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.bannerFocusX",
+  "type": "real",
+  "default": 0.5,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.bannerFocusY",
+  "type": "real",
+  "default": 0.5,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.keepRightSidebarLoaded",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.translator.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.translator.delay",
+  "type": "int",
+  "default": 300,
+  "comment": "Delay before sending request. Reduces (potential) rate limits and lag."
+ },
+ {
+  "key": "sidebar.football.enable",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.legs",
+  "type": "int",
+  "default": 4,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.markets",
+  "type": "list",
+  "default": [
+   "result",
+   "goals",
+   "corners"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.alerts",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.alertsScope",
+  "type": "string",
+  "default": "parlay",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.goalSound",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.goalSoundPath",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.cornerSound",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.cornerSoundPath",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.soundVolume",
+  "type": "int",
+  "default": 100,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.football.notify",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.media.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.media.artColors",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.media.artShape",
+  "type": "string",
+  "default": "Oval",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.media.showLyrics",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.media.shapeArt",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.media.blurredBackground",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.ai.textFadeIn",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.booru.allowNsfw",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.booru.defaultProvider",
+  "type": "string",
+  "default": "yandere",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.booru.limit",
+  "type": "int",
+  "default": 20,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.booru.zerochan.username",
+  "type": "string",
+  "default": "[unset]",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.bottom",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.valueScroll",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.clickless",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.cornerRegionWidth",
+  "type": "int",
+  "default": 250,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.cornerRegionHeight",
+  "type": "int",
+  "default": 5,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.bottomLeftAction",
+  "type": "string",
+  "default": "sidebarLeftOpen",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.bottomRightAction",
+  "type": "string",
+  "default": "sidebarRightOpen",
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.visualize",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.clicklessCornerEnd",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.cornerOpen.clicklessCornerVerticalOffset",
+  "type": "int",
+  "default": 1,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.quickToggles.style",
+  "type": "string",
+  "default": "android",
+  "comment": "Options: classic, android"
+ },
+ {
+  "key": "sidebar.quickToggles.android.columns",
+  "type": "int",
+  "default": 5,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.quickToggles.android.toggles",
+  "type": "list",
+  "default": [
+   {
+    "size": 2,
+    "type": "network"
+   },
+   {
+    "size": 2,
+    "type": "bluetooth"
+   },
+   {
+    "size": 1,
+    "type": "idleInhibitor"
+   },
+   {
+    "size": 1,
+    "type": "mic"
+   },
+   {
+    "size": 2,
+    "type": "audio"
+   },
+   {
+    "size": 2,
+    "type": "nightLight"
+   }
+  ],
+  "comment": ""
+ },
+ {
+  "key": "sidebar.quickSliders.enable",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.quickSliders.showMic",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.quickSliders.showVolume",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "sidebar.quickSliders.showBrightness",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "custom.distroIcon",
+  "type": "string",
+  "default": "google-gemini-symbolic",
+  "comment": ""
+ },
+ {
+  "key": "custom.colorizeIcon",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "custom.iconColor",
+  "type": "string",
+  "default": "onLayer0",
+  "comment": ""
+ },
+ {
+  "key": "custom.iconsPath",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "screenRecord.savePath",
+  "type": "string",
+  "default": null,
+  "comment": "strip \"file://\""
+ },
+ {
+  "key": "screenRecord.systemAudio",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "screenRecord.microphone",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "screenSnip.savePath",
+  "type": "string",
+  "default": "",
+  "comment": "only copy to clipboard when empty"
+ },
+ {
+  "key": "sounds.battery",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sounds.pomodoro",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "sounds.theme",
+  "type": "string",
+  "default": "freedesktop",
+  "comment": ""
+ },
+ {
+  "key": "time.format",
+  "type": "string",
+  "default": "hh:mm",
+  "comment": "https://doc.qt.io/qt-6/qtime.html#toString"
+ },
+ {
+  "key": "time.showDate",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "time.shortDateFormat",
+  "type": "string",
+  "default": "dd/MM",
+  "comment": ""
+ },
+ {
+  "key": "time.dateWithYearFormat",
+  "type": "string",
+  "default": "dd/MM/yyyy",
+  "comment": ""
+ },
+ {
+  "key": "time.dateFormat",
+  "type": "string",
+  "default": "ddd, dd/MM",
+  "comment": ""
+ },
+ {
+  "key": "time.pomodoro.breakTime",
+  "type": "int",
+  "default": 300,
+  "comment": ""
+ },
+ {
+  "key": "time.pomodoro.cyclesBeforeLongBreak",
+  "type": "int",
+  "default": 4,
+  "comment": ""
+ },
+ {
+  "key": "time.pomodoro.focus",
+  "type": "int",
+  "default": 1500,
+  "comment": ""
+ },
+ {
+  "key": "time.pomodoro.longBreak",
+  "type": "int",
+  "default": 900,
+  "comment": ""
+ },
+ {
+  "key": "time.secondPrecision",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "updates.enableCheck",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "updates.checkInterval",
+  "type": "int",
+  "default": 120,
+  "comment": "minutes"
+ },
+ {
+  "key": "updates.adviseUpdateThreshold",
+  "type": "int",
+  "default": 75,
+  "comment": "packages"
+ },
+ {
+  "key": "updates.stronglyAdviseUpdateThreshold",
+  "type": "int",
+  "default": 200,
+  "comment": "packages"
+ },
+ {
+  "key": "wallpaperSelector.useSystemFileDialog",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.showBlurBackground",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.showHomePath",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.userPath",
+  "type": "string",
+  "default": "",
+  "comment": "This can be set to any path and it will show up as a quick access in the wallpaper selector\""
+ },
+ {
+  "key": "wallpaperSelector.liveWallpapersPath",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.showSearchbar",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.columns",
+  "type": "int",
+  "default": 4,
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.closeAfterSelection",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.changeInterval",
+  "type": "int",
+  "default": 0,
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.sortMode",
+  "type": "string",
+  "default": "time",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenApiKey",
+  "type": "string",
+  "default": "",
+  "comment": "fallback; keyring (\"/wallhaven <key>\") takes precedence"
+ },
+ {
+  "key": "wallpaperSelector.wallhavenCategories",
+  "type": "string",
+  "default": "111",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenPurity",
+  "type": "string",
+  "default": "100",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenSorting",
+  "type": "string",
+  "default": "relevance",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenOrder",
+  "type": "string",
+  "default": "desc",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenRatios",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenColors",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenQuery",
+  "type": "string",
+  "default": "",
+  "comment": ""
+ },
+ {
+  "key": "wallpaperSelector.wallhavenTopRange",
+  "type": "string",
+  "default": "1y",
+  "comment": ""
+ },
+ {
+  "key": "windows.showTitlebar",
+  "type": "bool",
+  "default": true,
+  "comment": "Client-side decoration for shell apps"
+ },
+ {
+  "key": "windows.centerTitle",
+  "type": "bool",
+  "default": true,
+  "comment": ""
+ },
+ {
+  "key": "hacks.arbitraryRaceConditionDelay",
+  "type": "int",
+  "default": 20,
+  "comment": "milliseconds"
+ },
+ {
+  "key": "workSafety.enable.wallpaper",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "workSafety.enable.clipboard",
+  "type": "bool",
+  "default": false,
+  "comment": ""
+ },
+ {
+  "key": "workSafety.triggerCondition.networkNameKeywords",
+  "type": "list",
+  "default": [
+   "airport",
+   "cafe",
+   "college",
+   "company",
+   "eduroam",
+   "free",
+   "guest",
+   "public",
+   "school",
+   "university"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "workSafety.triggerCondition.fileKeywords",
+  "type": "list",
+  "default": [
+   "anime",
+   "booru",
+   "ecchi",
+   "hentai",
+   "yande.re",
+   "konachan",
+   "breast",
+   "nipples",
+   "pussy",
+   "nsfw",
+   "spoiler",
+   "girl"
+  ],
+  "comment": ""
+ },
+ {
+  "key": "workSafety.triggerCondition.linkKeywords",
+  "type": "list",
+  "default": [
+   "hentai",
+   "porn",
+   "sukebei",
+   "hitomi.la",
+   "rule34",
+   "gelbooru",
+   "fanbox",
+   "dlsite"
+  ],
+  "comment": ""
+ }
+]
