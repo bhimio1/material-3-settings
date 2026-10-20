@@ -1535,6 +1535,10 @@ inode/directory=org.gnome.Nautilus.desktop
 
 // ------------------------------------------------------------------ catalog
 
+/// Rules here load after Material 3 Browser's own userChrome and survive
+/// its updates. Restart the browser to apply.
+const M3_BROWSER_CSS_TEMPLATE: &str = "/* Your own userChrome rules. Material 3 Browser never overwrites this file.\n   Restart the browser to apply. Example: wider vertical tabs\n\n#navigator-toolbox { --zen-sidebar-width: 280px !important; }\n*/\n";
+
 pub static APPS: &[AppDef] = &[
     // Terminals
     AppDef::new("kitty", "kitty", ICON_TERMINAL, Category::Terminal,
@@ -1709,6 +1713,12 @@ pub static APPS: &[AppDef] = &[
         "zed", "https://zed.dev/docs/configuring-zed",
         &[ConfigSpec::new("settings.json", &["~/.config/zed/settings.json"], Format::Json, ZED_TEMPLATE, ZED_QUICK)])
         .bin("zeditor"),
+    AppDef::new("m3-browser", "Material 3 Browser", ICON_LANGUAGE, Category::Tools,
+        "Zen with a Material 3 look; themes websites with your colors.",
+        "material-3-browser-bin", "https://github.com/bhimio1/material-3-browser",
+        &[ConfigSpec::new("Custom browser CSS", &["~/.local/share/m3-browser/profile/chrome/m3-custom.css"],
+            Format::Text(Syntax::Css), M3_BROWSER_CSS_TEMPLATE, &[])])
+        .bin("m3-browser"),
     // Media
     AppDef::new("mpv", "mpv", ICON_MOVIE, Category::Media,
         "Minimal, powerful video player.",
