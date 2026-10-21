@@ -2,6 +2,7 @@
 
 use crate::sys::arch::AurHelper;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
@@ -48,6 +49,8 @@ pub struct Config {
     pub backups: bool,
     pub editor_font_size: f32,
     pub custom_files: Vec<CustomFile>,
+    /// Install method per Material 3 app (by short name), when not automatic.
+    pub material_app_methods: BTreeMap<String, crate::material_apps::Method>,
 }
 
 impl Default for Config {
@@ -63,6 +66,7 @@ impl Default for Config {
             backups: true,
             editor_font_size: 13.0,
             custom_files: Vec::new(),
+            material_app_methods: BTreeMap::new(),
         }
     }
 }
