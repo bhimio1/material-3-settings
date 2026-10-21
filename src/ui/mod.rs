@@ -36,6 +36,10 @@ pub enum Page {
     Apps,
     /// One app's config, by catalog id (or `custom:<index>`).
     App(String),
+    /// Install, update and remove the Material 3 apps.
+    MaterialApps,
+    /// One Material 3 app, by short name (`music`).
+    MaterialApp(String),
     Preferences,
 }
 
@@ -56,7 +60,7 @@ pub const NAV: &[(&str, &[Page])] = &[
         ],
     ),
     ("Arch Linux", &[Page::Packages, Page::About]),
-    ("Desktop", &[Page::Hyprland, Page::End4]),
+    ("Desktop", &[Page::Hyprland, Page::End4, Page::MaterialApps]),
     ("Configs", &[Page::Apps]),
 ];
 
@@ -77,6 +81,7 @@ impl Page {
             Page::Hyprland => "Hyprland",
             Page::End4 => "end4-pC / ii",
             Page::Apps | Page::App(_) => "App configs",
+            Page::MaterialApps | Page::MaterialApp(_) => "Material 3 apps",
             Page::Preferences => "Preferences",
         }
     }
@@ -97,6 +102,7 @@ impl Page {
             Page::Hyprland => ICON_WATER_DROP,
             Page::End4 => ICON_AUTO_AWESOME,
             Page::Apps | Page::App(_) => ICON_TUNE,
+            Page::MaterialApps | Page::MaterialApp(_) => ICON_WIDGETS,
             Page::Preferences => ICON_SETTINGS,
         }
     }
@@ -118,6 +124,7 @@ impl Page {
             "hyprland" => Page::Hyprland,
             "end4" | "end4-pc" | "ii" | "illogical-impulse" => Page::End4,
             "apps" | "configs" => Page::Apps,
+            "material-apps" | "m3-apps" => Page::MaterialApps,
             "preferences" | "prefs" => Page::Preferences,
             id if crate::catalog::find(id).is_some() => Page::App(id.to_string()),
             _ => return None,

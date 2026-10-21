@@ -19,6 +19,9 @@ PAGE opens a page directly: overview, appearance, display, sound, network,
 bluetooth, power, datetime, default-apps, packages, about, hyprland, end4,
 apps, preferences, or the id of an app on the Apps page (kitty, waybar, …).
 
+  material-apps [APP]   the Material 3 apps page, or one app's page, by
+                        name or binary (music, m3-music, calendar, …)
+
 Options:
   -h, --help   Show this help
   -V, --version";
@@ -27,7 +30,8 @@ fn main() -> eframe::Result {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn")).init();
 
     let mut start = None;
-    for arg in std::env::args().skip(1) {
+    let mut args = std::env::args().skip(1).peekable();
+    while let Some(arg) = args.next() {
         match arg.as_str() {
             "-h" | "--help" => {
                 println!("{USAGE}");
@@ -40,6 +44,18 @@ fn main() -> eframe::Result {
             other if other.starts_with('-') => {
                 eprintln!("Unknown option: {other}\n\n{USAGE}");
                 std::process::exit(2);
+            }
+            "material-apps" | "m3-apps" => {
+                start = Some(match args.next_if(|a| !a.starts_with('-')) {
+                    Some(key) => match material_apps::find(&key) {
+                        Some(a) => ui::Page::MaterialApp(a.id.to_string()),
+                        None => {
+                            eprintln!("Unknown Material 3 app: {key}\n\n{USAGE}");
+                            std::process::exit(2);
+                        }
+                    },
+                    None => ui::Page::MaterialApps,
+                });
             }
             page => match ui::Page::parse(page) {
                 Some(p) => start = Some(p),

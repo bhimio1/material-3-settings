@@ -49,6 +49,20 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                     .iter()
                     .filter(|a| matches(a.name, &query) || matches(a.id, &query) || matches(a.category.label(), &query))
                     .collect();
+                let m3_apps: Vec<_> = crate::material_apps::APPS
+                    .iter()
+                    .filter(|a| matches(a.name, &query) || matches(a.bin, &query) || matches(a.summary, &query))
+                    .collect();
+                if !m3_apps.is_empty() {
+                    section_header(ui, "Material 3 apps");
+                    for a in m3_apps {
+                        any = true;
+                        let page = Page::MaterialApp(a.id.to_string());
+                        if nav_item(ui, a.icon, a.name, current == page, None).clicked() {
+                            actions.push(Action::Goto(page));
+                        }
+                    }
+                }
                 if !apps.is_empty() {
                     section_header(ui, "App configs");
                     for a in apps {
@@ -76,7 +90,8 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 }
                 for page in pages.iter() {
                     let selected = current == *page
-                        || (*page == Page::Apps && matches!(current, Page::App(_)));
+                        || (*page == Page::Apps && matches!(current, Page::App(_)))
+                        || (*page == Page::MaterialApps && matches!(current, Page::MaterialApp(_)));
                     if nav_item(ui, page.icon(), page.title(), selected, None).clicked() {
                         actions.push(Action::Goto(page.clone()));
                     }

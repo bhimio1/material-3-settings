@@ -10,6 +10,7 @@ pub mod default_apps;
 pub mod display;
 pub mod end4;
 pub mod hyprland;
+pub mod material_apps;
 pub mod network;
 pub mod overview;
 pub mod packages;
@@ -31,6 +32,7 @@ pub struct States {
     pub display: display::State,
     pub end4: end4::State,
     pub hyprland: hyprland::State,
+    pub material_apps: material_apps::State,
     pub network: network::State,
     pub overview: overview::State,
     pub packages: packages::State,
@@ -56,6 +58,8 @@ pub fn show(ui: &mut egui::Ui, app: &mut App) {
         Page::End4 => end4::show(ui, app),
         Page::Apps => apps::show_catalog(ui, app),
         Page::App(id) => apps::show_app(ui, app, &id),
+        Page::MaterialApps => material_apps::show_list(ui, app),
+        Page::MaterialApp(id) => material_apps::show_app(ui, app, &id),
         Page::Preferences => prefs::show(ui, app),
     }
 }

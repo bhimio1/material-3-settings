@@ -166,6 +166,9 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     let distro = app.os.pretty_name.clone();
     let installed_count = app.installed.len();
     let terminal = crate::sys::term::pick(&app.config.terminal);
+    super::material_apps::poll(app);
+    let material = super::material_apps::summary(app);
+    let st = &mut app.pages.overview;
 
     egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
         egui::Frame::new().inner_margin(egui::Margin::symmetric(32, 28)).show(ui, |ui| {
@@ -242,6 +245,18 @@ pub fn show(ui: &mut Ui, app: &mut App) {
             desktop_card(ui, ICON_AUTO_AWESOME, (p.tertiary_container, p.on_tertiary_container), title, &text, |ui| {
                 if widgets::button(ui, ButtonKind::Filled, Some(ICON_TUNE), if desktop.end4pc || desktop.ii { "Customize" } else { "Learn more" }).clicked() {
                     actions.push(Action::Goto(Page::End4));
+                }
+            });
+            let total = crate::material_apps::APPS.len();
+            let text = match material {
+                Some((n, 0)) => format!("{n} of {total} installed. Music, Games, Browser, AI, Viewer, Text, Monitor and Calendar are a click away."),
+                Some((n, u)) => format!("{n} of {total} installed, {u} update{} available.", if u == 1 { "" } else { "s" }),
+                None => "Music, Games, Browser, AI, Viewer, Text, Monitor and Calendar, made to match this desktop.".into(),
+            };
+            desktop_card(ui, ICON_WIDGETS, (p.primary_container, p.on_primary_container), "Material 3 apps", &text, |ui| {
+                let updates = material.is_some_and(|(_, u)| u > 0);
+                if widgets::button(ui, ButtonKind::Filled, Some(if updates { ICON_UPDATE } else { ICON_APPS }), if updates { "Update" } else { "Manage" }).clicked() {
+                    actions.push(Action::Goto(Page::MaterialApps));
                 }
             });
 
