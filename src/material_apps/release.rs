@@ -13,15 +13,53 @@ pub const MAX_AGE: Duration = Duration::from_secs(6 * 60 * 60);
 
 const UA: &str = concat!("m3-settings/", env!("CARGO_PKG_VERSION"));
 
-/// The HTTP client: honours `HTTPS_PROXY`/`NO_PROXY` and trusts the system's
+/// The HTTP client for `url`: uses `HTTPS_PROXY` unless `NO_PROXY` exempts
+/// the host (ureq only reads the former), and trusts the system's
 /// certificate store.
-pub fn agent(timeout: Duration) -> ureq::Agent {
+pub fn agent(url: &str, timeout: Duration) -> ureq::Agent {
+    let no_proxy = std::env::var("NO_PROXY")
+        .or_else(|_| std::env::var("no_proxy"))
+        .unwrap_or_default();
     ureq::AgentBuilder::new()
         .timeout_connect(Duration::from_secs(15))
         .timeout_read(timeout)
         .user_agent(UA)
-        .try_proxy_from_env(true)
+        .try_proxy_from_env(!bypasses_proxy(url, &no_proxy))
         .build()
+}
+
+fn host_of(url: &str) -> &str {
+    let rest = url.split_once("://").map_or(url, |(_, r)| r);
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
+    let authority = authority.rsplit_once('@').map_or(authority, |(_, h)| h);
+    if let Some(v6) = authority.strip_prefix('[') {
+        return v6.split(']').next().unwrap_or("");
+    }
+    authority.split(':').next().unwrap_or("")
+}
+
+/// Does a `NO_PROXY` list (hosts, `.domain` suffixes, `*`, IPv4 CIDRs)
+/// cover the host of `url`?
+pub fn bypasses_proxy(url: &str, no_proxy: &str) -> bool {
+    let host = host_of(url).to_ascii_lowercase();
+    let ip: Option<std::net::Ipv4Addr> = host.parse().ok();
+    no_proxy.split(',').map(|e| e.trim().to_ascii_lowercase()).any(|entry| {
+        if entry.is_empty() {
+            return false;
+        }
+        if entry == "*" {
+            return true;
+        }
+        if let (Some(ip), Some((net, bits))) = (ip, entry.split_once('/')) {
+            let (Ok(net), Ok(bits)) = (net.parse::<std::net::Ipv4Addr>(), bits.parse::<u32>()) else {
+                return false;
+            };
+            let mask = if bits == 0 { 0 } else { u32::MAX << (32 - bits.min(32)) };
+            return u32::from(ip) & mask == u32::from(net) & mask;
+        }
+        let domain = entry.trim_start_matches("*.").trim_start_matches('.');
+        host == domain || host.ends_with(&format!(".{domain}"))
+    })
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
@@ -133,7 +171,7 @@ enum Fetch {
 
 fn fetch_latest(app: &MaterialApp) -> Fetch {
     let url = format!("https://api.github.com/repos/{}/releases/latest", app.repo);
-    let resp = agent(Duration::from_secs(20))
+    let resp = agent(&url, Duration::from_secs(20))
         .get(&url)
         .set("Accept", "application/vnd.github+json")
         .call();
@@ -209,7 +247,7 @@ fn aur_packages(names: &[String]) -> Option<Vec<String>> {
     struct Resp {
         results: Vec<Pkg>,
     }
-    let resp: Resp = agent(Duration::from_secs(15))
+    let resp: Resp = agent(&url, Duration::from_secs(15))
         .get(&url)
         .call()
         .ok()?
@@ -331,6 +369,22 @@ mod tests {
         std::fs::write(dir.path().join("m3-music.json"), serde_json::to_string(&stale).unwrap()).unwrap();
         let mut problem = Some("rate limited".to_string());
         assert_eq!(latest_cached(music, dir.path(), false, &mut problem), entry.latest);
+    }
+
+    #[test]
+    fn no_proxy_lists() {
+        let list = "localhost,127.0.0.0/8,.internal, example.org,*.svc.local";
+        assert!(bypasses_proxy("http://127.0.0.1:8765/a.tar.gz", list));
+        assert!(bypasses_proxy("http://localhost/x", list));
+        assert!(bypasses_proxy("https://a.internal/x", list));
+        assert!(bypasses_proxy("https://example.org/x", list));
+        assert!(bypasses_proxy("https://dl.example.org/x", list));
+        assert!(bypasses_proxy("https://user@x.svc.local:443/x", list));
+        assert!(!bypasses_proxy("https://api.github.com/repos", list));
+        assert!(!bypasses_proxy("https://notexample.org/x", list));
+        assert!(!bypasses_proxy("http://128.0.0.1/x", list));
+        assert!(bypasses_proxy("https://api.github.com/", "*"));
+        assert!(!bypasses_proxy("https://api.github.com/", ""));
     }
 
     #[test]

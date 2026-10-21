@@ -42,7 +42,7 @@ pub fn rewrite_exec(desktop: &str, bin: &str, bin_dir: &Path) -> String {
 }
 
 fn download(url: &str, to: &Path, mut progress: impl FnMut(f32)) -> Result<(), String> {
-    let resp = agent(Duration::from_secs(60))
+    let resp = agent(url, Duration::from_secs(60))
         .get(url)
         .call()
         .map_err(|e| format!("Download failed: {e}"))?;
@@ -165,7 +165,7 @@ pub fn install_release(app: &MaterialApp, dirs: &Dirs, release: &Release, events
         })?;
         if let Some(sum_url) = &release.checksum {
             let _ = events.send(Event::Stage("Checking the download…".into()));
-            let sums = agent(Duration::from_secs(20))
+            let sums = agent(sum_url, Duration::from_secs(20))
                 .get(sum_url)
                 .call()
                 .map_err(|e| format!("Couldn't download the checksum: {e}"))?
