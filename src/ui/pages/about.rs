@@ -152,6 +152,18 @@ pub fn show(ui: &mut Ui, app: &mut App) {
             });
         }
 
+        card(ui, "Welcome", |ui| {
+            let mut desc = "Wallpaper and colors, Material 3 apps, default apps and the most useful keyboard shortcuts, one step at a time.".to_string();
+            if !crate::welcome::greeted(&crate::welcome::marker_path()) {
+                desc.push_str(" The shell will show it at your next login.");
+            }
+            common::row(ui, "First-run welcome", &desc, |ui| {
+                if widgets::button(ui, ButtonKind::Tonal, Some(ICON_WAVING_HAND), "Run the welcome again").clicked() {
+                    actions.push(crate::ui::Action::StartWelcome);
+                }
+            });
+        });
+
         ui.add_space(20.0);
         ui.horizontal(|ui| {
             if common::refresh_button(ui, st.info.running()) {

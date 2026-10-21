@@ -6,6 +6,7 @@ pub mod editor;
 pub mod pages;
 pub mod sidebar;
 pub mod toasts;
+pub mod welcome;
 pub mod widgets;
 
 use egui_material_icons::{icons::*, MaterialIcon};
@@ -148,6 +149,11 @@ pub enum Action {
     RefreshPackages,
     /// Preferences changed: save them and re-apply the theme.
     ConfigChanged,
+    /// Show the welcome flow instead of the pages.
+    StartWelcome,
+    /// Leave the welcome flow, recording that it was seen. Either go on to
+    /// the pages or close the window.
+    FinishWelcome { open_settings: bool },
 }
 
 pub type Actions = Vec<Action>;

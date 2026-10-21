@@ -703,6 +703,62 @@ pub fn summary(app: &App) -> Option<(usize, usize)> {
     Some((installed, updates))
 }
 
+/// How a set of installs is carried out: AUR packages in one terminal,
+/// source builds one after another in another, releases downloaded here.
+#[derive(Default)]
+struct Batch {
+    aur: Vec<&'static MaterialApp>,
+    source: Vec<&'static MaterialApp>,
+    release: Vec<&'static MaterialApp>,
+}
+
+fn batch(items: &[(&'static MaterialApp, Method)]) -> Batch {
+    let mut b = Batch::default();
+    for (a, method) in items {
+        match method {
+            Method::Aur => b.aur.push(a),
+            Method::Source => b.source.push(a),
+            Method::Release | Method::Auto => b.release.push(a),
+        }
+    }
+    b
+}
+
+/// The release check is back, so install methods are known.
+pub fn ready(app: &App) -> bool {
+    app.pages.material_apps.remote.value.as_ref().is_some_and(|r| !r.latest.is_empty())
+}
+
+pub fn is_installed(app: &App, a: &MaterialApp) -> bool {
+    app.pages.material_apps.local.value.as_ref().is_some_and(|l| l.get(a).is_installed())
+}
+
+/// A download or removal in progress: its stage and progress.
+pub fn job(app: &App, a: &MaterialApp) -> Option<(String, Option<f32>)> {
+    app.pages.material_apps.jobs.get(a.id).map(|j| (j.stage.clone(), j.progress))
+}
+
+/// Install several apps the way each card's Install button would.
+pub fn install_many(app: &mut App, apps: &[&'static MaterialApp]) {
+    let remote = app.pages.material_apps.remote.value.clone().unwrap_or_default();
+    let items: Vec<(&'static MaterialApp, Method)> = apps
+        .iter()
+        .map(|a| (*a, m3::choose(preferred(app, a), availability(app, &remote, a))))
+        .collect();
+    let b = batch(&items);
+    if !b.aur.is_empty() {
+        app.actions.push(Action::Install { packages: b.aur.iter().map(|a| remote.aur_package(a)).collect() });
+    }
+    if !b.source.is_empty() {
+        let dirs = Dirs::from_env();
+        let script = b.source.iter().map(|a| install::source_script(a, &dirs)).collect::<Vec<_>>().join("; ");
+        app.actions.push(Action::RunInTerminal(script));
+    }
+    for a in b.release {
+        run_op(app, Op::Install(a, Method::Release));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -726,5 +782,23 @@ mod tests {
         // A release without a Linux build isn't offered as an update.
         let no_build = Latest::Found(Release { tag: "v0.3.0".into(), ..Default::default() });
         assert!(pending_update(&managed("v0.1.0"), &no_build).is_none());
+    }
+
+    #[test]
+    fn batches_by_method() {
+        let app = |id: &str| m3::find(id).unwrap();
+        let b = batch(&[
+            (app("music"), Method::Aur),
+            (app("games"), Method::Release),
+            (app("text"), Method::Source),
+            (app("viewer"), Method::Aur),
+            (app("monitor"), Method::Source),
+        ]);
+        let ids = |v: &[&MaterialApp]| v.iter().map(|a| a.id).collect::<Vec<_>>();
+        assert_eq!(ids(&b.aur), vec!["music", "viewer"]);
+        assert_eq!(ids(&b.release), vec!["games"]);
+        assert_eq!(ids(&b.source), vec!["text", "monitor"]);
+        let empty = batch(&[]);
+        assert!(empty.aur.is_empty() && empty.source.is_empty() && empty.release.is_empty());
     }
 }

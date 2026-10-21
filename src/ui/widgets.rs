@@ -550,3 +550,30 @@ pub fn title_text(text: impl Into<String>, size: f32) -> egui::RichText {
 pub fn title_font(size: f32) -> FontId {
     FontId::new(size, crate::theme::style::medium_family())
 }
+
+/// M3 checkbox (18 px box in a 40 px target), drawn for a value owned by
+/// the caller. Returns the click response.
+pub fn checkbox(ui: &mut Ui, on: bool) -> Response {
+    let p = palette(ui);
+    let (rect, response) = ui.allocate_exact_size(vec2(40.0, 40.0), Sense::click());
+    if ui.is_rect_visible(rect) {
+        if response.hovered() {
+            let layer = if on { p.primary } else { p.on_surface };
+            ui.painter()
+                .circle_filled(rect.center(), 20.0, layer.gamma_multiply(0.08));
+        }
+        let b = Rect::from_center_size(rect.center(), vec2(18.0, 18.0));
+        if on {
+            ui.painter().rect_filled(b, CornerRadius::same(2), p.primary);
+            paint_icon(ui, ICON_CHECK, b.center(), 16.0, p.on_primary);
+        } else {
+            ui.painter().rect_stroke(
+                b,
+                CornerRadius::same(2),
+                Stroke::new(2.0, p.on_surface_variant),
+                StrokeKind::Inside,
+            );
+        }
+    }
+    response.on_hover_cursor(egui::CursorIcon::PointingHand)
+}

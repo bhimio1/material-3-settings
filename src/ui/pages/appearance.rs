@@ -3,6 +3,7 @@
 //! GSettings and GTK's settings.ini.
 
 use crate::app::App;
+use crate::config::ColorScheme;
 use crate::end4::{self, Look, WallChange};
 use crate::sys::gtk::{self, Appearance, Choices, Field};
 use crate::sys::task::Task;
@@ -152,6 +153,11 @@ fn apply(st: &mut State, ctx: &egui::Context, field: Field, local: &Appearance) 
 /// The end-4 shell's color scripts are installed.
 fn shell_colors(st: &State) -> bool {
     st.walls.value.as_ref().is_some_and(|w| w.script.is_some())
+}
+
+/// For the welcome: whether the wallpaper controls show (once known).
+pub fn has_shell_colors(app: &App) -> bool {
+    shell_colors(&app.pages.appearance)
 }
 
 /// Load font files for previews in the background, one at a time.
@@ -462,6 +468,55 @@ fn wallpaper_body(ui: &mut Ui, st: &mut State, ctx: &egui::Context) {
     if busy {
         common::loading(ui, st.wall_op_label);
         ctx.request_repaint_after(std::time::Duration::from_millis(200));
+    }
+}
+
+/// Wallpaper, light/dark and colors in one card, for the welcome flow. On
+/// a desktop without the end-4 shell, light/dark and this app's own colors.
+pub fn show_look(ui: &mut Ui, app: &mut App) {
+    let ctx = app.ctx.clone();
+    let theme_file = app.theme_file();
+    let st = &mut app.pages.appearance;
+    let actions = &mut app.actions;
+    sync(st, &ctx, actions);
+    if st.walls.value.is_none() {
+        common::loading(ui, "Reading current settings…");
+        return;
+    }
+    let shell = shell_colors(st);
+    let mut changed = false;
+    card(ui, if shell { "Wallpaper" } else { "Style" }, |ui| {
+        if shell {
+            wallpaper_body(ui, st, &ctx);
+            ui.separator();
+        }
+        match st.local.as_mut() {
+            Some(local) => changed = scheme_row(ui, local, shell),
+            None => common::loading(ui, "Reading current settings…"),
+        }
+        if !shell {
+            ui.separator();
+            if super::prefs::color_rows(ui, &mut app.config, &mut app.pages.prefs, theme_file.as_ref(), false) {
+                actions.push(Action::ConfigChanged);
+            }
+        }
+    });
+    if changed {
+        if let Some(local) = st.local.clone() {
+            apply(st, &ctx, Field::ColorScheme, &local);
+            // Without the shell's colors, this app follows the choice too.
+            if !shell {
+                app.config.color_scheme = match local.color_scheme.as_str() {
+                    "prefer-dark" => ColorScheme::Dark,
+                    "prefer-light" => ColorScheme::Light,
+                    _ => ColorScheme::System,
+                };
+                actions.push(Action::ConfigChanged);
+            }
+        }
+    }
+    if st.op.running() {
+        common::loading(ui, "Applying…");
     }
 }
 

@@ -27,6 +27,8 @@ pub struct App {
     installed_task: Task<HashSet<String>>,
     /// Per-page state.
     pub pages: pages::States,
+    /// The welcome flow, while it's showing (instead of the pages).
+    pub welcome: Option<ui::welcome::State>,
     system_dark: Option<bool>,
     /// A package install was started in a terminal; re-read the package
     /// list when the window gets focus back.
@@ -37,7 +39,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(cc: &eframe::CreationContext<'_>, start: Option<Page>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>, start: Option<Page>, welcome: bool) -> Self {
         let ctx = cc.egui_ctx.clone();
         style::install_fonts(&ctx);
 
@@ -84,6 +86,7 @@ impl App {
             installed: Arc::new(HashSet::new()),
             installed_task,
             pages: pages::States::default(),
+            welcome: welcome.then(ui::welcome::State::default),
             system_dark: ctx.system_theme().map(|t| t == egui::Theme::Dark),
             pending_package_refresh: false,
             was_focused: true,
@@ -209,6 +212,34 @@ impl App {
                 }
                 self.apply_theme();
             }
+            Action::StartWelcome => self.welcome = Some(ui::welcome::State::default()),
+            Action::FinishWelcome { open_settings } => {
+                self.finish_welcome();
+                self.welcome = None;
+                if open_settings {
+                    self.page = Page::Overview;
+                } else {
+                    self.ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                }
+            }
+        }
+    }
+
+    /// Record that the welcome was seen: in the shell's marker (so it
+    /// doesn't greet again, unless asked to) and in our config.
+    fn finish_welcome(&mut self) {
+        let Some(w) = self.welcome.as_mut() else { return };
+        if w.flow.finished {
+            return;
+        }
+        w.flow.finished = true;
+        let show = w.flow.show_next_time;
+        if let Err(e) = crate::welcome::set_show_next_time(&crate::welcome::marker_path(), show) {
+            self.toast(format!("Couldn't update the first-run marker: {e}"), ToastKind::Error);
+        }
+        self.config.welcome_done = true;
+        if let Err(e) = self.config.save() {
+            self.toast(format!("Couldn't save preferences: {e}"), ToastKind::Error);
         }
     }
 
@@ -224,6 +255,21 @@ impl App {
     fn layout(&mut self, ui: &mut egui::Ui) {
         let p = self.palette.clone();
         let surface = Frame::new().fill(p.surface);
+
+        if self.welcome.is_some() {
+            egui::CentralPanel::default()
+                .frame(surface.inner_margin(Margin::same(12)))
+                .show(ui, |ui| {
+                    Frame::new()
+                        .fill(p.surface_container_low)
+                        .corner_radius(CornerRadius::same(24))
+                        .show(ui, |ui| {
+                            ui.set_min_size(ui.available_size());
+                            ui::welcome::show(ui, self);
+                        });
+                });
+            return;
+        }
 
         egui::Panel::left("sidebar")
             .resizable(true)
@@ -263,7 +309,7 @@ impl eframe::App for App {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        if ui.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Comma)) {
+        if self.welcome.is_none() && ui.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Comma)) {
             self.actions.push(Action::Goto(Page::Preferences));
         }
         self.layout(ui);
@@ -276,6 +322,8 @@ impl eframe::App for App {
     }
 
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        // Closing the window counts as seeing the welcome, like the shell's.
+        self.finish_welcome();
         let _ = self.config.save();
     }
 }

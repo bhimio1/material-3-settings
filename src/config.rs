@@ -51,6 +51,10 @@ pub struct Config {
     pub custom_files: Vec<CustomFile>,
     /// Install method per Material 3 app (by short name), when not automatic.
     pub material_app_methods: BTreeMap<String, crate::material_apps::Method>,
+    /// The welcome flow has been finished or closed at least once. The
+    /// shell's own marker (see `welcome.rs`) is what decides whether it
+    /// greets again; this records it for Settings.
+    pub welcome_done: bool,
 }
 
 impl Default for Config {
@@ -67,6 +71,7 @@ impl Default for Config {
             editor_font_size: 13.0,
             custom_files: Vec::new(),
             material_app_methods: BTreeMap::new(),
+            welcome_done: false,
         }
     }
 }
@@ -102,6 +107,7 @@ mod tests {
         let c: Config = toml::from_str("seed_color = \"#FF0000\"\n").unwrap();
         assert_eq!(c.seed_color, "#FF0000");
         assert!(c.backups);
+        assert!(!c.welcome_done);
         let round: Config = toml::from_str(&toml::to_string_pretty(&c).unwrap()).unwrap();
         assert_eq!(round, c);
     }
