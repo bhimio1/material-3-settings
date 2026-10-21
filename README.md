@@ -38,6 +38,38 @@ Anything interactive (installs, upgrades) opens in your terminal so you can see 
 - Restarts the shell and opens its settings overlay.
 - Covers all 588 options with proper controls: switches, sliders, and dropdowns built from the option comments. It has an Essentials card, section chips, search, and reset to default. Changes apply live and leave the rest of the file untouched.
 
+**Material 3 apps**
+
+The **Material 3 apps** page (Desktop → Material 3 apps, or `m3-settings material-apps`) is where you install, update, open and remove the apps that go with this desktop:
+
+| App | Command | What it is |
+| --- | --- | --- |
+| Settings | `m3-settings` | this app |
+| Files | `m3fm` | the [file manager](https://github.com/bhimio1/material-3-file-manager-rust) |
+| Screenshots | `m3-screenshots` | capture, annotate and record the screen |
+| Music | `m3-music` | YouTube Music and your local library |
+| Games | `m3-games` | Steam, Lutris and Heroic games, and Game Mode |
+| Browser | `m3-browser` | Zen, with websites themed to your wallpaper |
+| AI | `m3-ai` | a desktop app for Claude Code |
+| Viewer | `m3-viewer` | images and videos |
+| Text | `m3-text` | a text editor |
+| Monitor | `m3-monitor` | processes and system resources |
+| Calendar | `m3-calendar` | Google, Microsoft, iCloud and local calendars |
+
+- **Essential apps:** Settings, Files and Screenshots. The end4-pC shell depends on them, so it installs them itself. Here you can update or repair them, but not remove them.
+- **Optional apps:** everything else. You install them from this page.
+- **How apps are installed:** automatically by the best method available. You can change the method for each app under *Advanced*:
+  1. **AUR package:** `material-3-<app>-bin`, or `-git`, through paru or yay in a terminal. This is used when the package is published. Updates then come with your system updates.
+  2. **GitHub release:** the prebuilt binary goes to `~/.local/bin` and the desktop entry to `~/.local/share/applications`. The download is checked against its `.sha256`, and you can watch the progress in the app.
+  3. **Build from source:** `git clone`, then `cargo build --release` in a terminal (plus `npm` for the browser extension). This is used when there is no release.
+- **Updates:** releases are checked at most every 6 hours and cached in `~/.cache/m3-settings/material-apps`. When GitHub's rate limit is hit, the cached result is used.
+- **Shared records:** release and source installs are recorded in `~/.local/state/quickshell/user/material-apps/<command>.version`, the same files the shell's installer writes. So the page also updates apps that the shell installed, and the shell's installer recognises apps installed here.
+- **Each app's page:** shows what the app needs (mpv, yt-dlp, gamescope, …) with an Install button for each. It also has Open, Update, Remove and the project page. Calendar offers to start its background service (`systemctl --user enable --now m3-calendar.service`).
+- **Command line:** the shell opens this page with `m3-settings material-apps`, or one app's page with `m3-settings material-apps <app>`. `<app>` can be the command (`m3-music`) or the short name (`music`).
+
+![Material 3 apps](docs/screenshot-material-apps.png)
+![An app's page](docs/screenshot-material-app.png)
+
 **Hyprland**
 - Gaps, borders, rounding, opacity, blur, shadows, animations, layout, and keyboard, mouse and touchpad input. Current values are read live from `hyprctl`.
 - Changes are saved in a marked block in your own config: `custom/general.lua` on end-4 installs, otherwise `hyprland.lua` or `hyprland.conf`. Then `hyprctl reload` runs.
@@ -99,7 +131,7 @@ cargo build --release
 ./target/release/m3-settings [PAGE]
 ```
 
-`PAGE` opens a page directly. It can be a page name (`overview`, `sound`, `network`, `packages`, `hyprland`, `end4`, `apps`, …) or an app id (`kitty`, `waybar`, …), so you can bind it in Hyprland (end-4: `~/.config/hypr/custom/keybinds.lua`):
+`PAGE` opens a page directly. It can be a page name (`overview`, `sound`, `network`, `packages`, `hyprland`, `end4`, `apps`, …), an app id (`kitty`, `waybar`, …), or `material-apps [APP]` for the Material 3 apps page. You can bind any of these in Hyprland (end-4: `~/.config/hypr/custom/keybinds.lua`):
 
 ```lua
 hl.bind("SUPER + I", hl.dsp.exec_cmd("m3-settings"))
@@ -125,6 +157,7 @@ src/
   catalog.rs    the App configs catalog (paths, formats, templates, quick settings)
   end4.rs       illogical-impulse / end4-pC detection, config.json, option schema
   hypr.rs       hyprctl queries and the managed Hyprland config block
+  material_apps/  the Material 3 apps: catalog, release checks, install/update/remove
   files.rs      open config files: save, backups, external changes
   formats/      comment-preserving key/value, TOML and JSONC editing
   sys/          commands, background tasks, pacman, audio, network, bluetooth, …
