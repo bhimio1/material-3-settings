@@ -15,4 +15,5 @@ pub mod power;
 pub mod sysinfo;
 pub mod task;
 pub mod term;
+pub mod thumbs;
 pub mod time;

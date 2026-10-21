@@ -197,7 +197,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 (p.tertiary_container, p.on_tertiary_container),
             ];
             let tiles = vec![
-                Tile { page: Page::Appearance, subtitle: "Themes, icons, cursor and fonts".into(), accent: accents[0] },
+                Tile { page: Page::Appearance, subtitle: "Wallpaper, themes, icons and fonts".into(), accent: accents[0] },
                 Tile { page: Page::Display, subtitle: "Resolution, scale and refresh rate".into(), accent: accents[1] },
                 Tile { page: Page::Sound, subtitle: "Output, input and volume".into(), accent: accents[2] },
                 Tile { page: Page::Network, subtitle: "Wi-Fi and connections".into(), accent: accents[0] },

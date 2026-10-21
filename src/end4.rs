@@ -324,6 +324,158 @@ pub fn update_shell(home: &Path, name: &str) -> Result<String, String> {
     })
 }
 
+// ------------------------------------------------------------------ wallpaper
+
+/// Image types the shell's wallpaper script and our thumbnails handle.
+const WALLPAPER_EXTS: &[&str] = &["png", "jpg", "jpeg", "webp"];
+
+/// Installed shells, the one Hyprland starts first, then end4-pC, then ii.
+fn shells_by_preference(home: &Path) -> Vec<String> {
+    let active = variable_files(home).into_iter().find_map(|f| parse_qs_config(&std::fs::read_to_string(f).ok()?));
+    let mut names: Vec<String> = active.into_iter().collect();
+    for n in [FORK, UPSTREAM] {
+        if !names.iter().any(|x| x == n) {
+            names.push(n.to_string());
+        }
+    }
+    names
+        .into_iter()
+        .filter(|n| shell_dir(home, n).join("shell.qml").is_file())
+        .collect()
+}
+
+/// A file inside the preferred shell that has it.
+pub fn shell_file(home: &Path, rel: &str) -> Option<PathBuf> {
+    shells_by_preference(home)
+        .into_iter()
+        .map(|n| shell_dir(home, &n).join(rel))
+        .find(|p| p.is_file())
+}
+
+/// The shell's `switchwall.sh`, which sets the wallpaper, light/dark mode
+/// and accent color, and regenerates every color file from them.
+pub fn switchwall(home: &Path) -> Option<PathBuf> {
+    shell_file(home, "scripts/colors/switchwall.sh")
+}
+
+/// Arguments for `switchwall.sh`.
+#[derive(Clone, Debug, PartialEq)]
+pub enum WallChange {
+    Image(PathBuf),
+    /// Let the script ask for a file (it opens a file dialog).
+    Pick,
+    Mode { dark: bool },
+    /// Colors from a fixed accent instead of the wallpaper (`None` = back
+    /// to the wallpaper).
+    Accent(Option<String>),
+}
+
+impl WallChange {
+    pub fn args(&self) -> Vec<String> {
+        match self {
+            WallChange::Image(p) => vec!["--image".into(), p.to_string_lossy().into_owned()],
+            WallChange::Pick => Vec::new(),
+            WallChange::Mode { dark } => vec!["--mode".into(), if *dark { "dark" } else { "light" }.into(), "--noswitch".into()],
+            WallChange::Accent(Some(hex)) => vec!["--color".into(), hex.clone(), "--noswitch".into()],
+            WallChange::Accent(None) => vec!["--color".into(), "clear".into(), "--noswitch".into()],
+        }
+    }
+}
+
+/// Run `switchwall.sh`. It takes a few seconds (it generates the palettes).
+pub fn run_switchwall(home: &Path, change: &WallChange) -> Result<(), String> {
+    let script = switchwall(home).ok_or("The end-4 shell's switchwall.sh wasn't found")?;
+    let args = change.args();
+    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
+    cmd::run(&script.to_string_lossy(), &refs).map(|_| ())
+}
+
+/// The wallpaper and accent color in config.json.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Look {
+    pub wallpaper: Option<PathBuf>,
+    pub accent: Option<String>,
+}
+
+pub fn parse_look(config: &Value) -> Look {
+    let s = |key: &str| {
+        lookup(config, key)
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+    };
+    Look {
+        wallpaper: s("background.wallpaperPath").map(PathBuf::from),
+        accent: s("appearance.palette.accentColor"),
+    }
+}
+
+pub fn read_look(home: &Path) -> Look {
+    std::fs::read_to_string(config_path(home))
+        .ok()
+        .and_then(|t| crate::formats::jsonc::parse(&t).ok())
+        .map(|v| parse_look(&v))
+        .unwrap_or_default()
+}
+
+fn is_image(p: &Path) -> bool {
+    p.extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| WALLPAPER_EXTS.contains(&e.to_ascii_lowercase().as_str()))
+}
+
+/// Images in `dir` and its subfolders (one level, like `Wallpapers/showcase`),
+/// sorted by name.
+pub fn images_in(dir: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    let Ok(entries) = std::fs::read_dir(dir) else { return out };
+    let mut subdirs = Vec::new();
+    for e in entries.flatten() {
+        let p = e.path();
+        if p.is_dir() {
+            subdirs.push(p);
+        } else if is_image(&p) {
+            out.push(p);
+        }
+    }
+    subdirs.sort();
+    for d in subdirs {
+        if let Ok(entries) = std::fs::read_dir(&d) {
+            out.extend(entries.flatten().map(|e| e.path()).filter(|p| p.is_file() && is_image(p)));
+        }
+    }
+    out.sort_by_key(|p| p.file_name().map(|n| n.to_ascii_lowercase()));
+    out
+}
+
+/// Wallpapers to offer: the shell's default, then `~/Pictures/Wallpapers`,
+/// without duplicates. The current one is always included (first, when it
+/// isn't among them), and the order doesn't change when it does.
+pub fn wallpaper_choices(current: Option<&Path>, default: Option<&Path>, folder: &Path, limit: usize) -> Vec<PathBuf> {
+    let usable = |p: &&Path| p.is_file() && is_image(p);
+    let mut all: Vec<PathBuf> = Vec::new();
+    for p in default.filter(usable).map(Path::to_path_buf).into_iter().chain(images_in(folder)) {
+        if !all.contains(&p) {
+            all.push(p);
+        }
+    }
+    let mut out: Vec<PathBuf> = all.into_iter().take(limit).collect();
+    if let Some(cur) = current.filter(usable) {
+        if !out.iter().any(|p| p == cur) && limit > 0 {
+            out.truncate(limit - 1);
+            out.insert(0, cur.to_path_buf());
+        }
+    }
+    out
+}
+
+pub fn wallpapers_dir() -> PathBuf {
+    dirs::picture_dir()
+        .unwrap_or_else(|| crate::sys::paths::home().join("Pictures"))
+        .join("Wallpapers")
+}
+
 // --------------------------------------------------------------------- schema
 
 #[derive(Deserialize)]
@@ -791,5 +943,61 @@ mod tests {
         let s = detect(h);
         assert_eq!(s.active_name(), Some(FORK));
         assert!(s.active.unwrap().1.ends_with("custom/variables.lua"));
+    }
+
+    #[test]
+    fn switchwall_from_the_preferred_shell() {
+        let home = tempfile::tempdir().unwrap();
+        let h = home.path();
+        assert_eq!(switchwall(h), None);
+        for name in [FORK, UPSTREAM] {
+            let dir = shell_dir(h, name);
+            std::fs::create_dir_all(dir.join("scripts/colors")).unwrap();
+            std::fs::write(dir.join("shell.qml"), "").unwrap();
+            std::fs::write(dir.join("scripts/colors/switchwall.sh"), "").unwrap();
+        }
+        assert_eq!(switchwall(h), Some(shell_dir(h, FORK).join("scripts/colors/switchwall.sh")));
+        std::fs::create_dir_all(h.join(".config/hypr/custom")).unwrap();
+        std::fs::write(h.join(".config/hypr/custom/variables.lua"), "hl.env(\"qsConfig\", \"ii\")\n").unwrap();
+        assert_eq!(switchwall(h), Some(shell_dir(h, UPSTREAM).join("scripts/colors/switchwall.sh")));
+    }
+
+    #[test]
+    fn switchwall_arguments() {
+        assert_eq!(WallChange::Image("/w/a b.png".into()).args(), vec!["--image", "/w/a b.png"]);
+        assert!(WallChange::Pick.args().is_empty());
+        assert_eq!(WallChange::Mode { dark: true }.args(), vec!["--mode", "dark", "--noswitch"]);
+        assert_eq!(WallChange::Accent(Some("#6750A4".into())).args(), vec!["--color", "#6750A4", "--noswitch"]);
+        assert_eq!(WallChange::Accent(None).args(), vec!["--color", "clear", "--noswitch"]);
+    }
+
+    #[test]
+    fn look_and_wallpaper_choices() {
+        let look = parse_look(&json!({"background": {"wallpaperPath": "/w/cur.jpg"}, "appearance": {"palette": {"accentColor": ""}}}));
+        assert_eq!(look, Look { wallpaper: Some("/w/cur.jpg".into()), accent: None });
+        assert_eq!(parse_look(&json!({"appearance": {"palette": {"accentColor": "#FF0000"}}})).accent.as_deref(), Some("#FF0000"));
+
+        let dir = tempfile::tempdir().unwrap();
+        let walls = dir.path().join("Wallpapers");
+        std::fs::create_dir_all(walls.join("showcase")).unwrap();
+        for f in ["b.jpg", "a.PNG", "notes.txt", "showcase/c.webp"] {
+            std::fs::write(walls.join(f), "").unwrap();
+        }
+        let default = dir.path().join("default_wallpaper.png");
+        std::fs::write(&default, "").unwrap();
+        let names = |v: Vec<PathBuf>| v.iter().map(|p| p.file_name().unwrap().to_string_lossy().into_owned()).collect::<Vec<_>>();
+        assert_eq!(names(images_in(&walls)), vec!["a.PNG", "b.jpg", "c.webp"]);
+        let current = walls.join("b.jpg");
+        assert_eq!(
+            names(wallpaper_choices(Some(&current), Some(&default), &walls, 10)),
+            vec!["default_wallpaper.png", "a.PNG", "b.jpg", "c.webp"]
+        );
+        // A current wallpaper past the limit, or elsewhere, still shows.
+        assert_eq!(names(wallpaper_choices(Some(&walls.join("showcase/c.webp")), None, &walls, 2)), vec!["c.webp", "a.PNG"]);
+        let elsewhere = dir.path().join("elsewhere.jpg");
+        std::fs::write(&elsewhere, "").unwrap();
+        assert_eq!(names(wallpaper_choices(Some(&elsewhere), Some(&default), &walls, 10))[..2], ["elsewhere.jpg", "default_wallpaper.png"]);
+        assert_eq!(wallpaper_choices(None, None, &walls, 2).len(), 2);
+        assert!(wallpaper_choices(Some(Path::new("/missing.png")), None, &dir.path().join("none"), 5).is_empty());
     }
 }
