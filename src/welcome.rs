@@ -19,7 +19,7 @@ pub fn marker_in(state_home: &Path) -> PathBuf {
 }
 
 pub fn marker_path() -> PathBuf {
-    marker_in(&dirs::state_dir().unwrap_or_else(|| crate::sys::paths::home().join(".local/state")))
+    marker_in(&dirs::state_dir().unwrap_or_else(|| material_3_ui::sys::paths::home().join(".local/state")))
 }
 
 /// Whether the shell considers the user greeted.

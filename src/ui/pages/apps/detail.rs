@@ -7,11 +7,11 @@ use crate::app::App;
 use crate::catalog::{self, Kind, Quick};
 use crate::files::{self, ConfigFile};
 use crate::formats::{self, Format};
-use crate::sys::{cmd, paths};
-use crate::ui::widgets::{self, segmented, ButtonKind};
+use material_3_ui::sys::{cmd, paths};
+use material_3_ui::widgets::{self, segmented, ButtonKind};
 use crate::ui::{common, editor, Action, Page, ToastKind};
-use egui::{vec2, CornerRadius, Frame, Key, KeyboardShortcut, Margin, Modifiers, RichText, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use egui::{vec2, CornerRadius, Frame, Key, Margin, Modifiers, RichText, Ui};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::path::{Path, PathBuf};
 
 struct FileSpec {
@@ -198,7 +198,7 @@ pub fn show(ui: &mut Ui, app: &mut App, id: &str) {
     }
     let mut tab = *tab_entry;
 
-    if ui.input_mut(|i| i.consume_shortcut(&KeyboardShortcut::new(Modifiers::COMMAND, Key::S))) {
+    if material_3_ui::keys::take_key(ui.ctx(), Modifiers::COMMAND, Key::S) {
         if let Err(e) = state.files[&spec.path].validate() {
             actions.push(Action::Toast(format!("Not saved — syntax error: {e}"), ToastKind::Error));
         } else {
@@ -391,7 +391,7 @@ pub fn show(ui: &mut Ui, app: &mut App, id: &str) {
             common::card(ui, "Backups", |ui| {
                 common::note(ui, "A copy is kept the first time a file is saved in each session. Restoring loads it into the editor; save to keep it.");
                 for b in list.iter().take(10) {
-                    common::row(ui, &files::backup_label(b), &b.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default(), |ui| {
+                    common::row(ui, &material_3_ui::fs::backup_label(b), &b.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default(), |ui| {
                         if widgets::button(ui, ButtonKind::Tonal, Some(ICON_RESTORE), "Restore").clicked() {
                             match std::fs::read_to_string(b) {
                                 Ok(text) => {

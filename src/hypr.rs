@@ -16,7 +16,7 @@
 //! On end-4 installs it goes in `custom/general.lua`, which is loaded after
 //! the dots' defaults, so our values win and survive dots updates.
 
-use crate::sys::cmd;
+use material_3_ui::sys::cmd;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};

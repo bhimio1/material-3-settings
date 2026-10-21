@@ -5,12 +5,12 @@ use crate::app::App;
 use crate::end4::{self, Control, Opt, Status};
 use crate::files::ConfigFile;
 use crate::formats::Format;
-use crate::sys::{paths, task::Task};
-use crate::ui::common;
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::{paths, task::Task};
+use material_3_ui::common;
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, Action, Actions, ToastKind};
 use egui::{vec2, CornerRadius, RichText, Sense, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
 use serde_json::Value;
@@ -335,7 +335,7 @@ fn status_card(ui: &mut Ui, st: &mut State, ctx: &egui::Context, backups: bool, 
 fn make_default(st: &mut State, ctx: &egui::Context, name: &'static str, backups: bool) {
     st.start_job(ctx, "Changing the default shell", move || {
         let path = end4::set_default_shell(&paths::home(), name, backups)?;
-        let _ = crate::sys::cmd::run("hyprctl", &["reload"]);
+        let _ = material_3_ui::sys::cmd::run("hyprctl", &["reload"]);
         Ok(format!(
             "{name} is now the default shell ({}). Restart the shell to switch now.",
             paths::tilde(&path)

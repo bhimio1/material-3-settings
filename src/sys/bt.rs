@@ -1,6 +1,6 @@
 //! Bluetooth through `bluetoothctl` (bluez-utils).
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Controller {

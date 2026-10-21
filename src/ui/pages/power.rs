@@ -3,13 +3,13 @@
 use crate::app::App;
 use crate::sys::power::{self, Backlight, PowerSupplies, Profiles};
 use crate::sys::scx;
-use crate::sys::task::Task;
-use crate::ui::common::{dialog_buttons, modal};
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::task::Task;
+use material_3_ui::common::{dialog_buttons, modal};
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, Action, Page, ToastKind};
 use egui::{vec2, RichText, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -109,11 +109,11 @@ pub fn show(ui: &mut Ui, app: &mut App) {
         st.supplies.spawn(&ctx, power::read_supplies);
     }
     ctx.request_repaint_after(Duration::from_secs(10));
-    let has_ppd = crate::sys::cmd::exists("powerprofilesctl");
+    let has_ppd = material_3_ui::sys::cmd::exists("powerprofilesctl");
     if has_ppd {
         st.profiles.ensure(&ctx, power::load_profiles);
     }
-    let has_brightnessctl = crate::sys::cmd::exists("brightnessctl");
+    let has_brightnessctl = material_3_ui::sys::cmd::exists("brightnessctl");
     if has_brightnessctl {
         st.brightness.ensure(&ctx, power::load_brightness);
     }
@@ -144,7 +144,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     common::page(ui, ICON_BATTERY_CHARGING_FULL, "Power", "Power mode, battery, screen brightness and session.", |ui| {
         // ------------------------------------------------------ profiles
         card(ui, "Power mode", |ui| {
-            if !common::require(ui, actions, &installed, "powerprofilesctl", "power-profiles-daemon", "It switches between power saving and performance.") {
+            if !crate::ui::require(ui, actions, &installed, "powerprofilesctl", "power-profiles-daemon", "It switches between power saving and performance.") {
                 return;
             }
             match &st.profiles.value {
@@ -298,7 +298,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
         }
 
         card(ui, "Screen", |ui| {
-            if !common::require(ui, actions, &installed, "brightnessctl", "brightnessctl", "It changes the screen backlight.") {
+            if !crate::ui::require(ui, actions, &installed, "brightnessctl", "brightnessctl", "It changes the screen backlight.") {
                 return;
             }
             match &st.brightness.value {
@@ -327,7 +327,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
 
         // ---------------------------------------------------------- idle
         card(ui, "Idle and lock", |ui| {
-            let has_hypridle = crate::sys::cmd::exists("hypridle");
+            let has_hypridle = material_3_ui::sys::cmd::exists("hypridle");
             row(
                 ui,
                 "Screen dimming, locking and sleep",
@@ -390,7 +390,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 let kind = if matches!(a, SessionAction::PowerOff | SessionAction::Reboot) { ButtonKind::Danger } else { ButtonKind::Filled };
                 if widgets::button(ui, kind, None, a.label()).clicked() {
                     let verb = a.verb();
-                    st.op.spawn(&ctx, move || crate::sys::cmd::run("systemctl", &[verb]).map(|_| String::new()));
+                    st.op.spawn(&ctx, move || material_3_ui::sys::cmd::run("systemctl", &[verb]).map(|_| String::new()));
                     close = true;
                 }
                 if widgets::button(ui, ButtonKind::Text, None, "Cancel").clicked() {

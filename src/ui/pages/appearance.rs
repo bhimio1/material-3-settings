@@ -3,18 +3,20 @@
 //! GSettings and GTK's settings.ini.
 
 use crate::app::App;
-use crate::config::ColorScheme;
+use material_3_ui::theme::ColorScheme;
 use crate::end4::{self, Look, WallChange};
 use crate::sys::gtk::{self, Appearance, Choices, Field};
-use crate::sys::task::Task;
-use crate::sys::{paths, thumbs};
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::task::Task;
+use material_3_ui::sys::paths;
+use material_3_ui::thumbs::{self, Thumbnails};
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{Action, Actions, Page, ToastKind};
 use egui::{pos2, vec2, CornerRadius, FontFamily, FontId, Frame, Margin, Rect, RichText, Sense, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::time::SystemTime;
 
 const CURSOR_SIZES: [i32; 6] = [16, 24, 32, 40, 48, 64];
 const PREVIEW_TEXT: &str = "The quick brown fox jumps over the lazy dog 0123456789";
@@ -45,6 +47,8 @@ struct Walls {
     script: Option<PathBuf>,
     look: Look,
     choices: Vec<PathBuf>,
+    /// When each choice was last modified (for the thumbnail cache).
+    modified: HashMap<PathBuf, SystemTime>,
 }
 
 fn read_walls() -> Walls {
@@ -52,7 +56,11 @@ fn read_walls() -> Walls {
     let look = end4::read_look(&home);
     let default = end4::shell_file(&home, "assets/images/default_wallpaper.png");
     let choices = end4::wallpaper_choices(look.wallpaper.as_deref(), default.as_deref(), &end4::wallpapers_dir(), MAX_WALLPAPERS);
-    Walls { script: end4::switchwall(&home), look, choices }
+    let modified = choices
+        .iter()
+        .filter_map(|p| Some((p.clone(), std::fs::metadata(p).and_then(|m| m.modified()).ok()?)))
+        .collect();
+    Walls { script: end4::switchwall(&home), look, choices, modified }
 }
 
 #[derive(Default)]
@@ -65,9 +73,8 @@ pub struct State {
     previews: HashMap<String, Preview>,
     preview_task: Task<FontLoad>,
     walls: Task<Walls>,
-    /// Thumbnails by path; `None` when the image couldn't be read.
-    thumbs: HashMap<PathBuf, Option<egui::TextureHandle>>,
-    thumb_rx: Option<flume::Receiver<(PathBuf, Option<egui::ColorImage>)>>,
+    /// Wallpaper thumbnails, decoded in the background (made on first use).
+    thumbs: Option<Thumbnails>,
     /// A `switchwall.sh` run, and what it's doing.
     wall_op: Task<Result<(), String>>,
     wall_op_label: &'static str,
@@ -298,20 +305,6 @@ fn sync(st: &mut State, ctx: &egui::Context, actions: &mut Actions) {
             }
         }
     }
-    // Thumbnails arrive one by one.
-    if let Some(rx) = &st.thumb_rx {
-        for (path, img) in rx.try_iter() {
-            let tex = img.map(|img| ctx.load_texture(format!("wallpaper:{}", path.display()), img, egui::TextureOptions::LINEAR));
-            st.thumbs.insert(path, tex);
-        }
-    }
-    if let Some(w) = &st.walls.value {
-        let missing: Vec<PathBuf> = w.choices.iter().filter(|p| !st.thumbs.contains_key(*p)).cloned().collect();
-        let idle = st.thumb_rx.as_ref().is_none_or(|rx| rx.is_disconnected() && rx.is_empty());
-        if !missing.is_empty() && idle {
-            st.thumb_rx = Some(thumbs::load_all(missing, 480, 270, ctx.clone()));
-        }
-    }
 }
 
 /// The light/dark row. Returns true when the value changed.
@@ -398,9 +391,12 @@ fn wallpaper_body(ui: &mut Ui, st: &mut State, ctx: &egui::Context) {
             }
             continue;
         };
-        match st.thumbs.get(path) {
-            Some(Some(tex)) => paint_cover(ui, tex, rect, 12),
-            Some(None) => {
+        let mtime = walls.modified.get(path).copied().unwrap_or(SystemTime::UNIX_EPOCH);
+        let thumbs = st.thumbs.get_or_insert_with(|| Thumbnails::new(ctx, |p| thumbs::load_image(p, 480)));
+        let tex = thumbs.get(path, mtime);
+        match tex {
+            Some(tex) => paint_cover(ui, &tex, rect, 12),
+            None if !thumbs.loading(path) => {
                 ui.painter().rect_filled(rect, CornerRadius::same(12), p.surface_container_highest);
                 widgets::paint_icon(ui, ICON_BROKEN_IMAGE, rect.center(), 24.0, p.on_surface_variant);
             }
@@ -451,7 +447,7 @@ fn wallpaper_body(ui: &mut Ui, st: &mut State, ctx: &egui::Context) {
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 6.0;
             for preset in ACCENTS {
-                let c = crate::theme::palette::parse_hex(preset).expect("valid preset");
+                let c = material_3_ui::theme::palette::parse_hex(preset).expect("valid preset");
                 let (rect, resp) = ui.allocate_exact_size(vec2(30.0, 30.0), Sense::click());
                 ui.painter().circle_filled(rect.center(), 13.0, c);
                 if hex.eq_ignore_ascii_case(preset) {
@@ -506,7 +502,7 @@ pub fn show_look(ui: &mut Ui, app: &mut App) {
             apply(st, &ctx, Field::ColorScheme, &local);
             // Without the shell's colors, this app follows the choice too.
             if !shell {
-                app.config.color_scheme = match local.color_scheme.as_str() {
+                app.config.appearance.scheme = match local.color_scheme.as_str() {
                     "prefer-dark" => ColorScheme::Dark,
                     "prefer-light" => ColorScheme::Light,
                     _ => ColorScheme::System,
@@ -534,7 +530,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
         "Appearance",
         "Wallpaper, themes, icons, cursor and fonts. GTK settings are saved to GSettings and ~/.config/gtk-3.0 / gtk-4.0/settings.ini.",
         |ui| {
-            common::require(
+            crate::ui::require(
                 ui,
                 actions,
                 &installed,

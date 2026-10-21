@@ -10,7 +10,6 @@ mod formats;
 mod hypr;
 mod material_apps;
 mod sys;
-mod theme;
 mod ui;
 mod welcome;
 

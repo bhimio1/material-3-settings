@@ -4,7 +4,7 @@
 
 use crate::formats::kv::{Dialect, Sep};
 use crate::formats::{BoolStyle, Format, Syntax};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Category {
@@ -162,7 +162,7 @@ impl ConfigSpec {
         let candidates: Vec<_> = self
             .paths
             .iter()
-            .map(|p| crate::sys::paths::expand(p))
+            .map(|p| material_3_ui::sys::paths::expand(p))
             .collect();
         candidates
             .iter()
@@ -234,7 +234,7 @@ impl AppDef {
 
     /// Installed according to pacman's database or the binary on `$PATH`.
     pub fn is_installed(&self, packages: &std::collections::HashSet<String>) -> bool {
-        packages.contains(self.package) || crate::sys::cmd::exists(self.binary)
+        packages.contains(self.package) || material_3_ui::sys::cmd::exists(self.binary)
     }
 }
 

@@ -1,6 +1,6 @@
 //! NetworkManager through `nmcli` in terse (`-t`) mode, plus the hostname.
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 
 /// Split one terse nmcli line. Fields are `:`-separated; a literal `:` is
 /// written `\:` and a backslash `\\`.

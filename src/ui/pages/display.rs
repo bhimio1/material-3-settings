@@ -4,12 +4,12 @@
 
 use crate::app::App;
 use crate::hypr::{self, Monitor, MonitorRule};
-use crate::sys::{cmd, paths, task::Task};
-use crate::ui::common;
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::{cmd, paths, task::Task};
+use material_3_ui::common;
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, ToastKind};
 use egui::{RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 use std::collections::HashMap;
 
 const SCALES: &[f64] = &[0.5, 0.75, 1.0, 1.25, 1.333333, 1.5, 1.6, 1.666667, 1.75, 2.0, 2.25, 2.5, 3.0];

@@ -1,6 +1,6 @@
 //! Audio devices through `pactl` (PipeWire's pipewire-pulse or PulseAudio).
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 use serde_json::Value;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

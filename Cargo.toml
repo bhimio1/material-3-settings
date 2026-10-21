@@ -10,11 +10,9 @@ name = "m3-settings"
 path = "src/main.rs"
 
 [dependencies]
+material-3-ui = { git = "https://github.com/bhimio1/material-3-ui", rev = "5555579277ac2da1e0f1c15c2f2342d9bfd002b9", features = ["backups", "image"] }
 eframe = { version = "0.37", default-features = false, features = ["default_fonts", "glow", "wayland", "x11", "persistence"] }
 egui = "0.37"
-egui_material_icons = { version = "0.9", features = ["filled", "outline"] }
-material-colors = "0.4"
-notify = "6"
 flume = "0.11"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
@@ -28,7 +26,6 @@ log = "0.4"
 env_logger = "0.11"
 ureq = { version = "2.12", features = ["json", "native-certs"] }
 sha2 = "0.10"
-image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
 
 [dev-dependencies]
 tempfile = "3"

@@ -1711,6 +1711,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
 
 [[package]]
+name = "material-3-ui"
+version = "0.2.0"
+source = "git+https://github.com/bhimio1/material-3-ui?rev=5555579277ac2da1e0f1c15c2f2342d9bfd002b9#5555579277ac2da1e0f1c15c2f2342d9bfd002b9"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "dirs",
+ "egui",
+ "egui_material_icons",
+ "flume",
+ "image",
+ "material-colors",
+ "notify",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "material-colors"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1730,14 +1748,11 @@ dependencies = [
  "dirs",
  "eframe",
  "egui",
- "egui_material_icons",
  "env_logger",
  "flume",
  "fuzzy-matcher",
- "image",
  "log",
- "material-colors",
- "notify",
+ "material-3-ui",
  "serde",
  "serde_json",
  "sha2",

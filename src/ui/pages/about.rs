@@ -1,14 +1,14 @@
 //! About: distro, hardware and software versions.
 
 use crate::app::App;
-use crate::sys::pacman::format_size;
+use material_3_ui::format;
 use crate::sys::sysinfo::{self, SystemInfo};
-use crate::sys::task::Task;
-use crate::ui::common::{self, card};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::task::Task;
+use material_3_ui::common::{self, card};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, ToastKind};
 use egui::{vec2, CornerRadius, RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 
 #[derive(Default)]
 pub struct State {
@@ -48,8 +48,8 @@ fn hardware(info: &SystemInfo) -> Vec<(&'static str, String)> {
         "Memory",
         format!(
             "{} ({} available)",
-            format_size(info.mem_total),
-            format_size(info.mem_available)
+            format::bytes(info.mem_total),
+            format::bytes(info.mem_available)
         ),
     ));
     for (i, g) in info.gpus.iter().enumerate() {
@@ -69,8 +69,8 @@ fn report(info: &SystemInfo, distro: &str) -> String {
         out.push_str(&format!(
             "- **Disk {}:** {} used of {}\n",
             d.mount,
-            format_size(d.used),
-            format_size(d.total)
+            format::bytes(d.used),
+            format::bytes(d.total)
         ));
     }
     out
@@ -142,7 +142,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                         widgets::icon(ui, if d.mount == "/" { ICON_HARD_DRIVE } else { ICON_HOME }, 22.0, p.primary);
                         ui.label(widgets::title_text(&d.mount, 14.0).color(p.on_surface));
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            ui.label(RichText::new(format!("{} used of {} ({:.0}%)", format_size(d.used), format_size(d.total), fraction * 100.0)).size(12.5).color(p.on_surface_variant));
+                            ui.label(RichText::new(format!("{} used of {} ({:.0}%)", format::bytes(d.used), format::bytes(d.total), fraction * 100.0)).size(12.5).color(p.on_surface_variant));
                         });
                     });
                     ui.add_space(4.0);

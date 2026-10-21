@@ -1,10 +1,10 @@
 //! Navigation drawer: a search field, page groups, and Preferences.
 
-use super::widgets::{self, nav_item, section_header};
+use material_3_ui::widgets::{self, nav_item, section_header};
 use super::{Action, Page, NAV};
 use crate::app::App;
 use egui::{RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 
 fn matches(haystack: &str, query: &str) -> bool {
     haystack.to_lowercase().contains(&query.to_lowercase())
@@ -23,8 +23,8 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     ui.add_space(14.0);
 
     let width = ui.available_width() - 4.0;
-    let search = super::common::search_field(ui, &mut app.nav_query, "Search settings", width);
-    if ui.input(|i| i.modifiers.command && i.key_pressed(egui::Key::F)) {
+    let search = material_3_ui::common::search_field(ui, &mut app.nav_query, "Search settings", width);
+    if material_3_ui::keys::take_key(ui.ctx(), egui::Modifiers::COMMAND, egui::Key::F) {
         search.request_focus();
     }
     ui.add_space(8.0);

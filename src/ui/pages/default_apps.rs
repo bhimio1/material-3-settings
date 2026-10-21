@@ -2,12 +2,12 @@
 
 use crate::app::App;
 use crate::sys::mime::{self, Category, DesktopEntry, CATEGORIES};
-use crate::sys::task::Task;
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::task::Task;
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, Actions, ToastKind};
 use egui::{RichText, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::collections::BTreeMap;
 
 #[derive(Default)]
@@ -126,9 +126,9 @@ pub fn compact(ui: &mut Ui, app: &mut App, keys: &[&str]) {
     let installed = app.installed.clone();
     let st = &mut app.pages.default_apps;
     let actions = &mut app.actions;
-    let has_xdg_mime = crate::sys::cmd::exists("xdg-mime");
+    let has_xdg_mime = material_3_ui::sys::cmd::exists("xdg-mime");
     sync(st, &ctx, actions, has_xdg_mime);
-    if !common::require(ui, actions, &installed, "xdg-mime", "xdg-utils", "It reads and sets default applications.") {
+    if !crate::ui::require(ui, actions, &installed, "xdg-mime", "xdg-utils", "It reads and sets default applications.") {
         return;
     }
     let (Some(apps), Some(defaults)) = (st.apps.value.clone(), st.defaults.value.clone()) else {
@@ -153,12 +153,12 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     let ctx = app.ctx.clone();
     let st = &mut app.pages.default_apps;
     let actions = &mut app.actions;
-    let has_xdg_mime = crate::sys::cmd::exists("xdg-mime");
+    let has_xdg_mime = material_3_ui::sys::cmd::exists("xdg-mime");
     sync(st, &ctx, actions, has_xdg_mime);
 
     let installed = app.installed.clone();
     common::page(ui, ICON_APPS, "Default apps", "Which app opens links, folders and each kind of file.", |ui| {
-        if !common::require(ui, actions, &installed, "xdg-mime", "xdg-utils", "It reads and sets default applications.") {
+        if !crate::ui::require(ui, actions, &installed, "xdg-mime", "xdg-utils", "It reads and sets default applications.") {
             return;
         }
         let (Some(apps), Some(defaults)) = (st.apps.value.clone(), st.defaults.value.clone()) else {
@@ -177,8 +177,8 @@ pub fn show(ui: &mut Ui, app: &mut App) {
         card(ui, "Terminal", |ui| {
             let desc = format!(
                 "Used by apps that launch a terminal through xdg-terminal-exec{}. Saved in {}.",
-                if crate::sys::cmd::exists("xdg-terminal-exec") { "" } else { " (not installed)" },
-                crate::sys::paths::tilde(&mime::terminals_list_path())
+                if material_3_ui::sys::cmd::exists("xdg-terminal-exec") { "" } else { " (not installed)" },
+                material_3_ui::sys::paths::tilde(&mime::terminals_list_path())
             );
             terminal_picker(ui, st, &ctx, &apps, &defaults, &desc);
             ui.separator();

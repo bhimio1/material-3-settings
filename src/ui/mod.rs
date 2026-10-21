@@ -1,23 +1,16 @@
 //! User interface. Pages draw from app state and push [`Action`]s for
 //! anything that needs the whole app (navigation, toasts, terminals).
 
-pub mod common;
 pub mod editor;
 pub mod pages;
 pub mod sidebar;
-pub mod toasts;
 pub mod welcome;
-pub mod widgets;
 
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::common::{self, Requirement};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::path::PathBuf;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ToastKind {
-    Info,
-    Success,
-    Error,
-}
+pub use material_3_ui::toasts::ToastKind;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Page {
@@ -162,3 +155,22 @@ pub fn toast(actions: &mut Actions, text: impl Into<String>, kind: ToastKind) {
     actions.push(Action::Toast(text.into(), kind));
 }
 
+/// [`common::require`] for a page: when `program` is missing, show a
+/// banner offering to install `package` (in a terminal) and return false.
+pub fn require(
+    ui: &mut egui::Ui,
+    actions: &mut Actions,
+    installed: &std::collections::HashSet<String>,
+    program: &str,
+    package: &str,
+    purpose: &str,
+) -> bool {
+    match common::require(ui, installed, program, package, purpose) {
+        Requirement::Present => true,
+        Requirement::Missing => false,
+        Requirement::InstallRequested => {
+            actions.push(Action::Install { packages: vec![package.to_string()] });
+            false
+        }
+    }
+}

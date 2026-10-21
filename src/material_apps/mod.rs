@@ -15,8 +15,8 @@
 pub mod install;
 pub mod release;
 
-use crate::sys::{arch, cmd, paths};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::sys::{arch, cmd, paths};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};

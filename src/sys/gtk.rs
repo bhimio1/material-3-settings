@@ -2,7 +2,7 @@
 //! keys, mirrored into GTK 3/4 `settings.ini` so apps that don't read
 //! GSettings (and Hyprland's cursor) agree.
 
-use super::{cmd, paths};
+use material_3_ui::sys::{cmd, paths};
 use crate::formats::kv::{self, Dialect};
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};

@@ -5,14 +5,14 @@
 use crate::app::App;
 use crate::hypr::{self, Bind};
 use crate::material_apps::{MaterialApp, APPS};
-use crate::sys::{cmd, paths, task::Task};
-use crate::ui::common::{self, card};
+use material_3_ui::sys::{cmd, paths, task::Task};
+use material_3_ui::common::{self, card};
 use crate::ui::pages::{appearance, default_apps, material_apps};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{Action, ToastKind};
 use crate::welcome::{self, Flow, KeyHint, Step};
 use egui::{pos2, vec2, Align2, CornerRadius, Rect, RichText, Sense, Stroke, StrokeKind, Ui, UiBuilder};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 
 /// Widest the step content gets.
 const COLUMN: f32 = 760.0;
@@ -311,7 +311,7 @@ fn apps(ui: &mut Ui, app: &mut App, flow: &mut Flow) {
                     });
                 } else if installed {
                     pill(ui, ICON_CHECK_CIRCLE, "Installed");
-                } else if widgets::checkbox(ui, selected).clicked() {
+                } else if checkbox(ui, selected).clicked() {
                     toggled = true;
                 }
             });
@@ -451,4 +451,25 @@ fn done(ui: &mut Ui, app: &mut App, flow: &mut Flow) {
             }
         });
     });
+}
+
+/// M3 checkbox (18 px box in a 40 px target), drawn for a value owned by
+/// the caller. Returns the click response.
+fn checkbox(ui: &mut Ui, on: bool) -> egui::Response {
+    let p = widgets::palette(ui);
+    let (rect, response) = ui.allocate_exact_size(vec2(40.0, 40.0), Sense::click());
+    if ui.is_rect_visible(rect) {
+        if response.hovered() {
+            let layer = if on { p.primary } else { p.on_surface };
+            ui.painter().circle_filled(rect.center(), 20.0, layer.gamma_multiply(0.08));
+        }
+        let b = Rect::from_center_size(rect.center(), vec2(18.0, 18.0));
+        if on {
+            ui.painter().rect_filled(b, CornerRadius::same(2), p.primary);
+            widgets::paint_icon(ui, ICON_CHECK, b.center(), 16.0, p.on_primary);
+        } else {
+            ui.painter().rect_stroke(b, CornerRadius::same(2), Stroke::new(2.0, p.on_surface_variant), StrokeKind::Inside);
+        }
+    }
+    response.on_hover_cursor(egui::CursorIcon::PointingHand)
 }

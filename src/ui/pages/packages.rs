@@ -2,15 +2,16 @@
 //! mirrors and package search.
 
 use crate::app::App;
-use crate::sys::arch::{self, AurHelper};
+use material_3_ui::sys::arch::{self, AurHelper};
+use material_3_ui::format;
 use crate::sys::pacman::{self, SearchResult, Stats, Update};
-use crate::sys::task::Task;
-use crate::sys::{cmd, term};
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::task::Task;
+use material_3_ui::sys::{cmd, term};
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, Action, Actions, ToastKind};
 use egui::{RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 use std::path::Path;
 
 #[derive(Default)]
@@ -128,7 +129,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                     stat_tile(ui, w, s.explicit.to_string(), "explicit", false);
                     stat_tile(ui, w, s.foreign.len().to_string(), "AUR / foreign", false);
                     stat_tile(ui, w, s.orphans.len().to_string(), "orphans", !s.orphans.is_empty());
-                    stat_tile(ui, w, pacman::format_size(s.cache_bytes), "package cache", s.cache_bytes > 5 << 30);
+                    stat_tile(ui, w, format::bytes(s.cache_bytes), "package cache", s.cache_bytes > 5 << 30);
                 });
             }
         }
@@ -145,7 +146,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 } else {
                     format!("Optimised repositories in use: {}.", repos.join(", "))
                 };
-                let kernel = crate::sys::cmd::run("uname", &["-r"]).unwrap_or_default();
+                let kernel = material_3_ui::sys::cmd::run("uname", &["-r"]).unwrap_or_default();
                 row(ui, "Repositories", &desc, |_| {});
                 ui.separator();
                 row(ui, "Kernel", kernel.trim(), |ui| {
@@ -245,7 +246,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                     "Package cache",
                     &format!(
                         "{} in {} files at {}. {}",
-                        pacman::format_size(s.cache_bytes),
+                        format::bytes(s.cache_bytes),
                         s.cache_files,
                         pacman::CACHE_DIR,
                         if has_paccache { "Cleaning keeps the two newest versions of each package." } else { "Cleaning removes cached versions of packages that aren't installed." }

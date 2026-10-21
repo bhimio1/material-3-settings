@@ -1,14 +1,14 @@
 //! Date & time: clock, time zone, network time, and locale.
 
-use crate::ui::common::{dialog_buttons, modal};
+use material_3_ui::common::{dialog_buttons, modal};
 use crate::app::App;
-use crate::sys::task::Task;
+use material_3_ui::sys::task::Task;
 use crate::sys::time::{self, LocaleStatus, TimeStatus};
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, Action, Page, ToastKind};
 use egui::{RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 use std::time::Duration;
 
 #[derive(Default)]
@@ -28,12 +28,12 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     let p = app.palette.clone();
     let st = &mut app.pages.datetime;
     let actions = &mut app.actions;
-    let has_timedatectl = crate::sys::cmd::exists("timedatectl");
+    let has_timedatectl = material_3_ui::sys::cmd::exists("timedatectl");
 
     if has_timedatectl {
         st.status.ensure(&ctx, time::load_status);
     }
-    if crate::sys::cmd::exists("localectl") {
+    if material_3_ui::sys::cmd::exists("localectl") {
         st.locale.ensure(&ctx, time::load_locale);
     }
     if let Some(result) = st.op.take() {
@@ -68,7 +68,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
             });
 
         card(ui, "Time", |ui| {
-            if !common::require(ui, actions, &installed, "timedatectl", "systemd", "") {
+            if !crate::ui::require(ui, actions, &installed, "timedatectl", "systemd", "") {
                 return;
             }
             match &st.status.value {

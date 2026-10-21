@@ -4,7 +4,7 @@
 //! `running Lavd with arguments "…"`, `no scx scheduler running` and
 //! `supported schedulers: ["bpfland", "lavd", …]`.
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 
 /// Modes scx_loader understands (`scxctl … --mode`).
 pub const MODES: [(&str, &str); 5] = [

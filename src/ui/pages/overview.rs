@@ -4,13 +4,14 @@
 use crate::app::App;
 use crate::catalog;
 use crate::sys::power::{self, PowerSupplies};
-use crate::sys::task::Task;
-use crate::sys::{paths, sysinfo};
-use crate::ui::widgets::{self, clickable_card, paint_icon, truncated_galley, ButtonKind};
+use material_3_ui::sys::task::Task;
+use crate::sys::sysinfo;
+use material_3_ui::sys::paths;
+use material_3_ui::widgets::{self, clickable_card, paint_icon, truncated_galley, ButtonKind};
 use crate::ui::{Action, Page};
 use chrono::Timelike;
 use egui::{pos2, vec2, Color32, FontId, Id, Rect, RichText, Sense, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::time::Duration;
 
 #[derive(Clone, Default)]
@@ -165,7 +166,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     let user = std::env::var("USER").unwrap_or_default();
     let distro = app.os.pretty_name.clone();
     let installed_count = app.installed.len();
-    let terminal = crate::sys::term::pick(&app.config.terminal);
+    let terminal = material_3_ui::sys::term::pick(&app.config.terminal);
     super::material_apps::poll(app);
     let material = super::material_apps::summary(app);
     let st = &mut app.pages.overview;
@@ -185,7 +186,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
             ui.label(RichText::new(sub.join("  ·  ")).size(15.0).color(p.on_surface_variant));
 
             if !app.os.is_arch_based() {
-                crate::ui::common::banner(ui, ICON_WARNING, "This app is made for Arch Linux. Package management and some pages need pacman and systemd.", false, |_| {});
+                material_3_ui::common::banner(ui, ICON_WARNING, "This app is made for Arch Linux. Package management and some pages need pacman and systemd.", false, |_| {});
             }
 
             // ------------------------------------------------- quick tiles
@@ -285,7 +286,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
 
             if terminal.is_none() {
                 ui.add_space(16.0);
-                crate::ui::common::banner(ui, ICON_TERMINAL, "No terminal emulator found. Installing packages opens a terminal; pick or install one in Preferences.", false, |ui| {
+                material_3_ui::common::banner(ui, ICON_TERMINAL, "No terminal emulator found. Installing packages opens a terminal; pick or install one in Preferences.", false, |ui| {
                     if widgets::button(ui, ButtonKind::Tonal, None, "Preferences").clicked() {
                         actions.push(Action::Goto(Page::Preferences));
                     }

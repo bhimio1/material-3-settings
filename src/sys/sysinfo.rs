@@ -1,6 +1,6 @@
 //! Hardware and software facts for the About page.
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 use std::path::Path;
 
 #[derive(Clone, Debug, Default)]
@@ -134,7 +134,7 @@ pub fn load() -> SystemInfo {
             }
         }
     }
-    let home = super::paths::home();
+    let home = material_3_ui::sys::paths::home();
     let mut df_args = vec!["-B1", "--output=target,used,size", "/"];
     let home_str = home.to_string_lossy().into_owned();
     df_args.push(&home_str);
@@ -166,7 +166,7 @@ pub fn load() -> SystemInfo {
             .unwrap_or_default(),
         packages: Path::new("/var/lib/pacman/local")
             .is_dir()
-            .then(|| super::arch::installed_packages().len()),
+            .then(|| material_3_ui::sys::arch::installed_packages().len()),
         uefi: Path::new("/sys/firmware/efi").exists(),
     }
 }

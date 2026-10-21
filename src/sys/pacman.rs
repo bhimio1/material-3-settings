@@ -1,7 +1,7 @@
 //! pacman: package statistics, updates, the package cache, searching, and
 //! editing `/etc/pacman.conf`.
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 use crate::formats::{self, kv::Dialect};
 use std::path::Path;
 
@@ -316,21 +316,6 @@ pub fn mirrors(text: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn format_size(bytes: u64) -> String {
-    const UNITS: [&str; 5] = ["B", "KiB", "MiB", "GiB", "TiB"];
-    let mut v = bytes as f64;
-    let mut u = 0;
-    while v >= 1024.0 && u < UNITS.len() - 1 {
-        v /= 1024.0;
-        u += 1;
-    }
-    if u == 0 {
-        format!("{bytes} B")
-    } else {
-        format!("{v:.1} {}", UNITS[u])
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -393,7 +378,5 @@ mod tests {
     fn mirrorlist() {
         let m = mirrors("## Germany\n#Server = https://a/$repo\nServer = https://b/$repo/os/$arch\n");
         assert_eq!(m, ["https://b/$repo/os/$arch"]);
-        assert_eq!(format_size(1536), "1.5 KiB");
-        assert_eq!(format_size(12), "12 B");
     }
 }

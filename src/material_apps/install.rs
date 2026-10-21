@@ -5,7 +5,7 @@
 
 use super::release::{agent, Release};
 use super::{Dirs, MaterialApp};
-use crate::sys::{cmd, term::shell_quote};
+use material_3_ui::sys::{cmd, term::shell_quote};
 use sha2::{Digest, Sha256};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};

@@ -4,12 +4,12 @@
 
 use crate::app::App;
 use crate::hypr::{self, Bind, Block, Kind, Setting, Target, Val};
-use crate::sys::{paths, task::Task};
-use crate::ui::common;
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::{paths, task::Task};
+use material_3_ui::common;
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{toast, Action, Actions, ToastKind};
 use egui::{CornerRadius, Frame, Margin, RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 use std::collections::{BTreeMap, HashMap};
 
 #[derive(Default)]

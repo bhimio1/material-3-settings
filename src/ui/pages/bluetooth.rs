@@ -1,15 +1,15 @@
 //! Bluetooth: adapter power and visibility, paired devices, and pairing new
 //! ones, through `bluetoothctl`.
 
-use crate::ui::common::{empty_hint, list_row};
+use material_3_ui::common::{empty_hint, list_row};
 use crate::app::App;
 use crate::sys::bt::{self, Device};
-use crate::sys::task::Task;
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::task::Task;
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{Action, ToastKind};
 use egui::Ui;
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::time::Duration;
 
 const REFRESH: Duration = Duration::from_secs(10);
@@ -133,7 +133,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     }
 
     common::page(ui, ICON_BLUETOOTH, "Bluetooth", "Headphones, keyboards, mice and other wireless devices.", |ui| {
-        if !common::require(ui, actions, &installed, "bluetoothctl", "bluez-utils", "") {
+        if !crate::ui::require(ui, actions, &installed, "bluetoothctl", "bluez-utils", "") {
             return;
         }
         st.data.ensure(&ctx, bt::read);

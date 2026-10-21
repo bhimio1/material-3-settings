@@ -7,7 +7,7 @@
 //! `$qsConfig = ii` in older hyprlang installs); the user's override goes in
 //! `~/.config/hypr/custom/variables.lua`, which is loaded after the defaults.
 
-use crate::sys::cmd;
+use material_3_ui::sys::cmd;
 use serde::Deserialize;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
@@ -472,7 +472,7 @@ pub fn wallpaper_choices(current: Option<&Path>, default: Option<&Path>, folder:
 
 pub fn wallpapers_dir() -> PathBuf {
     dirs::picture_dir()
-        .unwrap_or_else(|| crate::sys::paths::home().join("Pictures"))
+        .unwrap_or_else(|| material_3_ui::sys::paths::home().join("Pictures"))
         .join("Wallpapers")
 }
 

@@ -6,7 +6,7 @@
 //! job is cached by a hash of the text so large files stay cheap to draw.
 
 use crate::formats::Syntax;
-use crate::theme::M3Palette;
+use material_3_ui::theme::M3Palette;
 use egui::text::{LayoutJob, TextFormat};
 use egui::{Color32, FontFamily, FontId, Stroke, Ui};
 use std::cell::RefCell;
