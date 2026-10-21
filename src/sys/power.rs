@@ -1,7 +1,7 @@
 //! Power profiles (power-profiles-daemon), batteries from sysfs, screen
 //! brightness (brightnessctl) and charge thresholds.
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 use std::path::{Path, PathBuf};
 
 /// Profiles as reported by `powerprofilesctl list`; the active one is

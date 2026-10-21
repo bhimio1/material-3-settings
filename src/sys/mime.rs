@@ -1,6 +1,6 @@
 //! Desktop entries and default applications (`xdg-mime`).
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -73,7 +73,7 @@ pub fn application_dirs() -> Vec<PathBuf> {
     let data_home = std::env::var_os("XDG_DATA_HOME")
         .map(PathBuf::from)
         .filter(|p| p.is_absolute())
-        .unwrap_or_else(|| super::paths::home().join(".local/share"));
+        .unwrap_or_else(|| material_3_ui::sys::paths::home().join(".local/share"));
     dirs.push(data_home.join("applications"));
     let data_dirs = std::env::var("XDG_DATA_DIRS")
         .ok()
@@ -134,11 +134,11 @@ pub fn scan() -> Vec<DesktopEntry> {
 pub struct Category {
     pub key: &'static str,
     pub label: &'static str,
-    pub icon: egui_material_icons::MaterialIcon,
+    pub icon: material_3_ui::icons::MaterialIcon,
     pub types: &'static [&'static str],
 }
 
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 
 pub const CATEGORIES: &[Category] = &[
     Category {
@@ -241,7 +241,7 @@ pub fn set_default(desktop_id: &str, types: &[&str]) -> Result<(), String> {
 
 /// `~/.config/xdg-terminals.list`: one desktop ID per line, first wins.
 pub fn terminals_list_path() -> PathBuf {
-    super::paths::config_home().join("xdg-terminals.list")
+    material_3_ui::sys::paths::config_home().join("xdg-terminals.list")
 }
 
 pub fn parse_terminals_list(text: &str) -> Vec<String> {

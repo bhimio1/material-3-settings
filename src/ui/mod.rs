@@ -1,22 +1,16 @@
 //! User interface. Pages draw from app state and push [`Action`]s for
 //! anything that needs the whole app (navigation, toasts, terminals).
 
-pub mod common;
 pub mod editor;
 pub mod pages;
 pub mod sidebar;
-pub mod toasts;
-pub mod widgets;
+pub mod welcome;
 
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::common::{self, Requirement};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::path::PathBuf;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ToastKind {
-    Info,
-    Success,
-    Error,
-}
+pub use material_3_ui::toasts::ToastKind;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Page {
@@ -36,6 +30,10 @@ pub enum Page {
     Apps,
     /// One app's config, by catalog id (or `custom:<index>`).
     App(String),
+    /// Install, update and remove the Material 3 apps.
+    MaterialApps,
+    /// One Material 3 app, by short name (`music`).
+    MaterialApp(String),
     Preferences,
 }
 
@@ -56,7 +54,7 @@ pub const NAV: &[(&str, &[Page])] = &[
         ],
     ),
     ("Arch Linux", &[Page::Packages, Page::About]),
-    ("Desktop", &[Page::Hyprland, Page::End4]),
+    ("Desktop", &[Page::Hyprland, Page::End4, Page::MaterialApps]),
     ("Configs", &[Page::Apps]),
 ];
 
@@ -77,6 +75,7 @@ impl Page {
             Page::Hyprland => "Hyprland",
             Page::End4 => "end4-pC / ii",
             Page::Apps | Page::App(_) => "App configs",
+            Page::MaterialApps | Page::MaterialApp(_) => "Material 3 apps",
             Page::Preferences => "Preferences",
         }
     }
@@ -97,6 +96,7 @@ impl Page {
             Page::Hyprland => ICON_WATER_DROP,
             Page::End4 => ICON_AUTO_AWESOME,
             Page::Apps | Page::App(_) => ICON_TUNE,
+            Page::MaterialApps | Page::MaterialApp(_) => ICON_WIDGETS,
             Page::Preferences => ICON_SETTINGS,
         }
     }
@@ -118,6 +118,7 @@ impl Page {
             "hyprland" => Page::Hyprland,
             "end4" | "end4-pc" | "ii" | "illogical-impulse" => Page::End4,
             "apps" | "configs" => Page::Apps,
+            "material-apps" | "m3-apps" => Page::MaterialApps,
             "preferences" | "prefs" => Page::Preferences,
             id if crate::catalog::find(id).is_some() => Page::App(id.to_string()),
             _ => return None,
@@ -141,6 +142,11 @@ pub enum Action {
     RefreshPackages,
     /// Preferences changed: save them and re-apply the theme.
     ConfigChanged,
+    /// Show the welcome flow instead of the pages.
+    StartWelcome,
+    /// Leave the welcome flow, recording that it was seen. Either go on to
+    /// the pages or close the window.
+    FinishWelcome { open_settings: bool },
 }
 
 pub type Actions = Vec<Action>;
@@ -149,3 +155,22 @@ pub fn toast(actions: &mut Actions, text: impl Into<String>, kind: ToastKind) {
     actions.push(Action::Toast(text.into(), kind));
 }
 
+/// [`common::require`] for a page: when `program` is missing, show a
+/// banner offering to install `package` (in a terminal) and return false.
+pub fn require(
+    ui: &mut egui::Ui,
+    actions: &mut Actions,
+    installed: &std::collections::HashSet<String>,
+    program: &str,
+    package: &str,
+    purpose: &str,
+) -> bool {
+    match common::require(ui, installed, program, package, purpose) {
+        Requirement::Present => true,
+        Requirement::Missing => false,
+        Requirement::InstallRequested => {
+            actions.push(Action::Install { packages: vec![package.to_string()] });
+            false
+        }
+    }
+}

@@ -1,15 +1,15 @@
 //! Network: Wi-Fi on/off and networks, wired/VPN connections, airplane mode
 //! and the hostname, through NetworkManager's `nmcli`.
 
-use crate::ui::common::{empty_hint, list_row};
+use material_3_ui::common::{empty_hint, list_row};
 use crate::app::App;
 use crate::sys::net::{self, Wifi};
-use crate::sys::{cmd, task::Task};
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::{cmd, task::Task};
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{Action, ToastKind};
 use egui::{RichText, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::time::Duration;
 
 const REFRESH: Duration = Duration::from_secs(15);
@@ -255,7 +255,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     }
 
     common::page(ui, ICON_WIFI, "Network", "Wi-Fi, wired connections and VPNs, managed by NetworkManager.", |ui| {
-        if !common::require(ui, actions, &installed, "nmcli", "networkmanager", "") {
+        if !crate::ui::require(ui, actions, &installed, "nmcli", "networkmanager", "") {
             return;
         }
         if st.data.value.is_none() && !st.data.running() {

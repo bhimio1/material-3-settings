@@ -2,13 +2,13 @@
 
 use crate::app::App;
 use crate::sys::audio::{self, Dir};
-use crate::sys::{cmd, task::Task};
-use crate::ui::common;
-use crate::ui::widgets::{self, ButtonKind};
+use material_3_ui::sys::{cmd, task::Task};
+use material_3_ui::common;
+use material_3_ui::widgets::{self, ButtonKind};
 use crate::ui::{Action, Actions, ToastKind};
-use crate::ui::common::{empty_hint, list_row};
+use material_3_ui::common::{empty_hint, list_row};
 use egui::{RichText, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::time::{Duration, Instant};
 
 /// Minimum gap between volume commands while a slider is dragged.
@@ -232,7 +232,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     flush_volume(st, &ctx, dragging);
 
     common::page(ui, ICON_VOLUME_UP, "Sound", "Speakers, headphones and microphones.", |ui| {
-        if !common::require(ui, actions, &installed, "pactl", "libpulse", "It talks to PipeWire (pipewire-pulse) or PulseAudio.") {
+        if !crate::ui::require(ui, actions, &installed, "pactl", "libpulse", "It talks to PipeWire (pipewire-pulse) or PulseAudio.") {
             return;
         }
         st.data.ensure(&ctx, audio::read);

@@ -1,15 +1,17 @@
 //! Preferences for this app itself: theme, terminal, AUR helper, backups.
 
 use crate::app::App;
-use crate::config::{ColorScheme, Config, ThemeSource};
-use crate::sys::arch::AurHelper;
-use crate::sys::{cmd, paths, term};
-use crate::theme::palette::{parse_hex, to_hex};
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, segmented, switch, ButtonKind};
+use crate::config::Config;
+use material_3_ui::theme::{ColorScheme, ThemeSource};
+use material_3_ui::sys::arch::AurHelper;
+use material_3_ui::sys::{cmd, paths, term};
+use material_3_ui::theme::palette::{parse_hex, to_hex};
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, segmented, switch, ButtonKind};
 use crate::ui::Action;
 use egui::{vec2, Color32, RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
+use std::path::PathBuf;
 
 const SEED_PRESETS: &[&str] = &[
     "#4285F4", "#6750A4", "#B3261E", "#E8710A", "#1E8E3E", "#00897B", "#C2185B", "#795548",
@@ -19,6 +21,69 @@ const SEED_PRESETS: &[&str] = &[
 #[derive(Default)]
 pub struct State {
     seed_text: Option<String>,
+}
+
+/// Where this app's colors come from, light/dark and the seed color.
+/// Shared with the welcome flow. Returns true when something changed.
+/// `with_scheme` adds the light/dark row (the welcome sets that one itself).
+pub fn color_rows(ui: &mut Ui, config: &mut Config, st: &mut State, theme_file: Option<&PathBuf>, with_scheme: bool) -> bool {
+    let p = widgets::palette(ui);
+    let mut changed = false;
+    let source_desc = match (&config.appearance.source, theme_file) {
+        (ThemeSource::Auto, Some(f)) => format!("Following {} (updates live with your wallpaper).", paths::tilde(f)),
+        (ThemeSource::Auto, None) => "No end-4 or file manager theme found, so the seed color below is used.".to_string(),
+        (ThemeSource::Seed, _) => "Using a palette generated from the seed color below.".to_string(),
+    };
+    row(ui, "Color source", &source_desc, |ui| {
+        changed |= segmented(ui, &mut config.appearance.source, &[
+            (ThemeSource::Auto, ICON_WALLPAPER, "Auto"),
+            (ThemeSource::Seed, ICON_PALETTE, "Seed"),
+        ]);
+    });
+    ui.separator();
+    let seed_mode = theme_file.is_none();
+    ui.add_enabled_ui(seed_mode, |ui| {
+        if with_scheme {
+            row(ui, "Color scheme", if seed_mode { "Light, dark, or follow the system." } else { "The theme file decides light or dark." }, |ui| {
+                changed |= segmented(ui, &mut config.appearance.scheme, &[
+                    (ColorScheme::System, ICON_BRIGHTNESS_AUTO, "System"),
+                    (ColorScheme::Light, ICON_LIGHT_MODE, "Light"),
+                    (ColorScheme::Dark, ICON_DARK_MODE, "Dark"),
+                ]);
+            });
+            ui.separator();
+        }
+        row(ui, "Seed color", "Every color in the interface is derived from this one.", |ui| {
+            let text = st.seed_text.get_or_insert_with(|| config.appearance.seed_color.clone());
+            let resp = ui.add(egui::TextEdit::singleline(text).desired_width(92.0).char_limit(7));
+            if resp.changed() {
+                if let Some(c) = parse_hex(text) {
+                    config.appearance.seed_color = to_hex(c);
+                    changed = true;
+                }
+            }
+            let mut color = parse_hex(&config.appearance.seed_color).unwrap_or(Color32::from_rgb(0x42, 0x85, 0xF4));
+            if ui.color_edit_button_srgba(&mut color).changed() {
+                config.appearance.seed_color = to_hex(color);
+                *text = config.appearance.seed_color.clone();
+                changed = true;
+            }
+            for hex in SEED_PRESETS.iter().rev() {
+                let c = parse_hex(hex).expect("valid preset");
+                let (rect, resp) = ui.allocate_exact_size(vec2(24.0, 24.0), egui::Sense::click());
+                ui.painter().circle_filled(rect.center(), 11.0, c);
+                if config.appearance.seed_color.eq_ignore_ascii_case(hex) {
+                    ui.painter().circle_stroke(rect.center(), 12.5, egui::Stroke::new(2.0, p.on_surface));
+                }
+                if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                    config.appearance.seed_color = hex.to_string();
+                    *text = hex.to_string();
+                    changed = true;
+                }
+            }
+        });
+    });
+    changed
 }
 
 pub fn show(ui: &mut Ui, app: &mut App) {
@@ -31,65 +96,14 @@ pub fn show(ui: &mut Ui, app: &mut App) {
 
     common::page(ui, ICON_SETTINGS, "Preferences", "How this app looks and behaves. Saved to config.toml.", |ui| {
         card(ui, "Appearance", |ui| {
-            let source_desc = match (&config.theme_source, &theme_file) {
-                (ThemeSource::Auto, Some(f)) => format!("Following {} (updates live with your wallpaper).", paths::tilde(f)),
-                (ThemeSource::Auto, None) => "No end-4 or file manager theme found, so the seed color below is used.".to_string(),
-                (ThemeSource::Seed, _) => "Using a palette generated from the seed color below.".to_string(),
-            };
-            row(ui, "Color source", &source_desc, |ui| {
-                changed |= segmented(ui, &mut config.theme_source, &[
-                    (ThemeSource::Auto, ICON_WALLPAPER, "Auto"),
-                    (ThemeSource::Seed, ICON_PALETTE, "Seed"),
-                ]);
-            });
-            ui.separator();
-            let seed_mode = theme_file.is_none();
-            ui.add_enabled_ui(seed_mode, |ui| {
-                row(ui, "Color scheme", if seed_mode { "Light, dark, or follow the system." } else { "The theme file decides light or dark." }, |ui| {
-                    changed |= segmented(ui, &mut config.color_scheme, &[
-                        (ColorScheme::System, ICON_BRIGHTNESS_AUTO, "System"),
-                        (ColorScheme::Light, ICON_LIGHT_MODE, "Light"),
-                        (ColorScheme::Dark, ICON_DARK_MODE, "Dark"),
-                    ]);
-                });
-                ui.separator();
-                row(ui, "Seed color", "Every color in the interface is derived from this one.", |ui| {
-                    let text = st.seed_text.get_or_insert_with(|| config.seed_color.clone());
-                    let resp = ui.add(egui::TextEdit::singleline(text).desired_width(92.0).char_limit(7));
-                    if resp.changed() {
-                        if let Some(c) = parse_hex(text) {
-                            config.seed_color = to_hex(c);
-                            changed = true;
-                        }
-                    }
-                    let mut color = parse_hex(&config.seed_color).unwrap_or(Color32::from_rgb(0x42, 0x85, 0xF4));
-                    if ui.color_edit_button_srgba(&mut color).changed() {
-                        config.seed_color = to_hex(color);
-                        *text = config.seed_color.clone();
-                        changed = true;
-                    }
-                    for hex in SEED_PRESETS.iter().rev() {
-                        let c = parse_hex(hex).expect("valid preset");
-                        let (rect, resp) = ui.allocate_exact_size(vec2(24.0, 24.0), egui::Sense::click());
-                        ui.painter().circle_filled(rect.center(), 11.0, c);
-                        if config.seed_color.eq_ignore_ascii_case(hex) {
-                            ui.painter().circle_stroke(rect.center(), 12.5, egui::Stroke::new(2.0, p.on_surface));
-                        }
-                        if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
-                            config.seed_color = hex.to_string();
-                            *text = hex.to_string();
-                            changed = true;
-                        }
-                    }
-                });
-            });
+            changed |= color_rows(ui, config, st, theme_file.as_ref(), true);
             ui.separator();
             row(ui, "Filled icons", "Use filled Material Symbols instead of outlined ones.", |ui| {
-                changed |= switch(ui, &mut config.filled_icons).changed();
+                changed |= switch(ui, &mut config.appearance.filled_icons).changed();
             });
             ui.separator();
             row(ui, "Interface scale", "Size of everything in the window.", |ui| {
-                let r = ui.add(egui::Slider::new(&mut config.ui_scale, 0.75..=1.75).step_by(0.05).custom_formatter(|v, _| format!("{:.0}%", v * 100.0)));
+                let r = ui.add(egui::Slider::new(&mut config.appearance.ui_scale, 0.75..=1.75).step_by(0.05).custom_formatter(|v, _| format!("{:.0}%", v * 100.0)));
                 // Apply on release so the slider doesn't jump under the cursor.
                 if r.drag_stopped() || (r.changed() && !r.dragged()) {
                     changed = true;
@@ -145,7 +159,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
         });
 
         card(ui, "Config files", |ui| {
-            let backups = paths::state_dir().join("backups");
+            let backups = crate::files::backup_store().dir;
             row(ui, "Back up before saving", &format!("Keep the 20 most recent versions of each file in {}.", paths::tilde(&backups)), |ui| {
                 if widgets::button(ui, ButtonKind::Text, Some(ICON_FOLDER_OPEN), "Open folder").clicked() {
                     let _ = std::fs::create_dir_all(&backups);

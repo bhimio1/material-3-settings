@@ -1,25 +1,27 @@
 //! App state, theme, layout and action dispatch.
 
-use crate::config::{ColorScheme, Config, ThemeSource};
-use crate::sys::arch::{self, OsRelease};
-use crate::sys::task::Task;
-use crate::sys::{cmd, term};
-use crate::theme::{sources, style, M3Palette};
-use crate::ui::toasts::{Toast, Toasts};
-use crate::ui::{self, pages, widgets, Action, Actions, Page, ToastKind};
+use crate::config::Config;
+use crate::ui::{self, pages, Action, Actions, Page, ToastKind};
 use egui::{CornerRadius, Frame, Margin};
+use material_3_ui::keys::take_key;
+use material_3_ui::sys::arch::{self, OsRelease};
+use material_3_ui::sys::task::Task;
+use material_3_ui::sys::{cmd, term};
+use material_3_ui::theme::{M3Palette, ThemeManager};
+use material_3_ui::toasts::{Toast, Toasts};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::time::Duration;
 
 pub struct App {
     pub ctx: egui::Context,
+    /// The current palette (a copy of the theme manager's).
     pub palette: M3Palette,
+    pub theme: ThemeManager,
     pub config: Config,
     pub page: Page,
     pub nav_query: String,
-    pub toasts: Toasts,
+    pub toasts: Toasts<Action>,
     pub actions: Actions,
     pub os: OsRelease,
     /// Installed pacman packages (names only).
@@ -27,55 +29,28 @@ pub struct App {
     installed_task: Task<HashSet<String>>,
     /// Per-page state.
     pub pages: pages::States,
-    system_dark: Option<bool>,
+    /// The welcome flow, while it's showing (instead of the pages).
+    pub welcome: Option<ui::welcome::State>,
     /// A package install was started in a terminal; re-read the package
     /// list when the window gets focus back.
     pending_package_refresh: bool,
     was_focused: bool,
-    _theme_watcher: Option<notify::RecommendedWatcher>,
-    theme_events: flume::Receiver<PathBuf>,
 }
 
 impl App {
-    pub fn new(cc: &eframe::CreationContext<'_>, start: Option<Page>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>, start: Option<Page>, welcome: bool) -> Self {
         let ctx = cc.egui_ctx.clone();
-        style::install_fonts(&ctx);
-
-        // Watch the palette files so the theme follows wallpaper changes.
-        let (tx, theme_events) = flume::unbounded();
-        let theme_watcher = {
-            use notify::Watcher;
-            let ctx = ctx.clone();
-            notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
-                if let Ok(ev) = res {
-                    if ev.kind.is_create() || ev.kind.is_modify() {
-                        for p in ev.paths {
-                            let _ = tx.send(p);
-                        }
-                        ctx.request_repaint_after(Duration::from_millis(150));
-                    }
-                }
-            })
-            .ok()
-            .map(|mut w| {
-                for file in [sources::end4_colors_path(), sources::file_manager_theme_path()]
-                    .into_iter()
-                    .flatten()
-                {
-                    if let Some(dir) = file.parent() {
-                        let _ = w.watch(dir, notify::RecursiveMode::NonRecursive);
-                    }
-                }
-                w
-            })
-        };
+        let config = Config::load();
+        // Installs the fonts and follows the desktop's palette file.
+        let theme = ThemeManager::new(&ctx, &config.appearance);
 
         let mut installed_task = Task::default();
         installed_task.spawn(&ctx, arch::installed_packages);
 
         let mut app = Self {
-            palette: M3Palette::from_seed(crate::theme::palette::DEFAULT_SEED, true),
-            config: Config::load(),
+            palette: theme.palette().clone(),
+            theme,
+            config,
             page: start.unwrap_or(Page::Overview),
             nav_query: String::new(),
             toasts: Toasts::default(),
@@ -84,14 +59,12 @@ impl App {
             installed: Arc::new(HashSet::new()),
             installed_task,
             pages: pages::States::default(),
-            system_dark: ctx.system_theme().map(|t| t == egui::Theme::Dark),
+            welcome: welcome.then(ui::welcome::State::default),
             pending_package_refresh: false,
             was_focused: true,
-            _theme_watcher: theme_watcher,
-            theme_events,
             ctx,
         };
-        app.apply_theme();
+        app.theme_error();
         app
     }
 
@@ -101,42 +74,22 @@ impl App {
 
     // ------------------------------------------------------------------ theme
 
-    fn wants_dark(&self) -> bool {
-        match self.config.color_scheme {
-            ColorScheme::Light => false,
-            ColorScheme::Dark => true,
-            ColorScheme::System => self.system_dark.unwrap_or(true),
-        }
-    }
-
     /// The palette file in use, if any.
     pub fn theme_file(&self) -> Option<PathBuf> {
-        match self.config.theme_source {
-            ThemeSource::Auto => sources::auto_theme_path(),
-            ThemeSource::Seed => None,
-        }
+        self.theme.theme_file(&self.config.appearance)
     }
 
     pub fn apply_theme(&mut self) {
-        let dark = self.wants_dark();
-        let palette = match self.theme_file() {
-            Some(path) => match M3Palette::from_theme_json(&path) {
-                Ok(p) => p,
-                Err(e) => {
-                    self.toast(format!("Couldn't read {}: {e}", path.display()), ToastKind::Error);
-                    M3Palette::from_seed(&self.config.seed_color, dark)
-                }
-            },
-            None => M3Palette::from_seed(&self.config.seed_color, dark),
-        };
-        style::apply(&self.ctx, &palette);
-        widgets::set_palette(&self.ctx, palette.clone());
-        widgets::set_filled_icons(self.config.filled_icons);
-        let scale = self.config.ui_scale.clamp(0.6, 2.5);
-        if (self.ctx.zoom_factor() - scale).abs() > f32::EPSILON {
-            self.ctx.set_zoom_factor(scale);
+        self.theme.apply(&self.config.appearance);
+        self.palette = self.theme.palette().clone();
+        self.theme_error();
+    }
+
+    /// Show a palette file that couldn't be read.
+    fn theme_error(&mut self) {
+        if let Some(e) = self.theme.take_error() {
+            self.toast(e, ToastKind::Error);
         }
-        self.palette = palette;
     }
 
     fn poll_background(&mut self) {
@@ -151,18 +104,9 @@ impl App {
             self.installed_task.spawn(&self.ctx, arch::installed_packages);
         }
         self.was_focused = focused;
-        let changed: Vec<PathBuf> = self.theme_events.try_iter().collect();
-        if let Some(theme) = self.theme_file() {
-            if changed.contains(&theme) {
-                self.apply_theme();
-            }
-        }
-        let system_dark = self.ctx.system_theme().map(|t| t == egui::Theme::Dark);
-        if system_dark != self.system_dark {
-            self.system_dark = system_dark;
-            if self.config.color_scheme == ColorScheme::System && self.theme_file().is_none() {
-                self.apply_theme();
-            }
+        if self.theme.poll(&self.config.appearance) {
+            self.palette = self.theme.palette().clone();
+            self.theme_error();
         }
     }
 
@@ -209,6 +153,34 @@ impl App {
                 }
                 self.apply_theme();
             }
+            Action::StartWelcome => self.welcome = Some(ui::welcome::State::default()),
+            Action::FinishWelcome { open_settings } => {
+                self.finish_welcome();
+                self.welcome = None;
+                if open_settings {
+                    self.page = Page::Overview;
+                } else {
+                    self.ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                }
+            }
+        }
+    }
+
+    /// Record that the welcome was seen: in the shell's marker (so it
+    /// doesn't greet again, unless asked to) and in our config.
+    fn finish_welcome(&mut self) {
+        let Some(w) = self.welcome.as_mut() else { return };
+        if w.flow.finished {
+            return;
+        }
+        w.flow.finished = true;
+        let show = w.flow.show_next_time;
+        if let Err(e) = crate::welcome::set_show_next_time(&crate::welcome::marker_path(), show) {
+            self.toast(format!("Couldn't update the first-run marker: {e}"), ToastKind::Error);
+        }
+        self.config.welcome_done = true;
+        if let Err(e) = self.config.save() {
+            self.toast(format!("Couldn't save preferences: {e}"), ToastKind::Error);
         }
     }
 
@@ -224,6 +196,21 @@ impl App {
     fn layout(&mut self, ui: &mut egui::Ui) {
         let p = self.palette.clone();
         let surface = Frame::new().fill(p.surface);
+
+        if self.welcome.is_some() {
+            egui::CentralPanel::default()
+                .frame(surface.inner_margin(Margin::same(12)))
+                .show(ui, |ui| {
+                    Frame::new()
+                        .fill(p.surface_container_low)
+                        .corner_radius(CornerRadius::same(24))
+                        .show(ui, |ui| {
+                            ui.set_min_size(ui.available_size());
+                            ui::welcome::show(ui, self);
+                        });
+                });
+            return;
+        }
 
         egui::Panel::left("sidebar")
             .resizable(true)
@@ -263,11 +250,12 @@ impl eframe::App for App {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        if ui.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Comma)) {
+        if self.welcome.is_none() && take_key(ui.ctx(), egui::Modifiers::COMMAND, egui::Key::Comma) {
             self.actions.push(Action::Goto(Page::Preferences));
         }
         self.layout(ui);
-        ui::toasts::show(&self.ctx.clone(), self);
+        let fired = self.toasts.show(&self.ctx, &self.palette, 20.0);
+        self.actions.extend(fired);
         self.process_actions();
     }
 
@@ -276,6 +264,8 @@ impl eframe::App for App {
     }
 
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        // Closing the window counts as seeing the welcome, like the shell's.
+        self.finish_welcome();
         let _ = self.config.save();
     }
 }

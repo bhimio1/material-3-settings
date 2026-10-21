@@ -4,10 +4,10 @@
 use crate::catalog::{Kind, Quick};
 use crate::files::ConfigFile;
 use crate::formats::{self, BoolStyle, Format};
-use crate::theme::palette::{parse_hex, to_hex};
-use crate::ui::widgets;
+use material_3_ui::theme::palette::{parse_hex, to_hex};
+use material_3_ui::widgets;
 use egui::{Color32, RichText, Ui};
-use egui_material_icons::icons::*;
+use material_3_ui::icons::icons::*;
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -358,7 +358,7 @@ pub fn control(
 
 /// Installed font families, from fontconfig.
 pub fn load_fonts() -> Vec<String> {
-    let out = crate::sys::cmd::run("fc-list", &[":", "family"]).unwrap_or_default();
+    let out = material_3_ui::sys::cmd::run("fc-list", &[":", "family"]).unwrap_or_default();
     let mut families: Vec<String> = out
         .lines()
         .filter_map(|l| l.split(',').next())

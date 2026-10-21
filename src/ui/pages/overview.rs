@@ -4,13 +4,14 @@
 use crate::app::App;
 use crate::catalog;
 use crate::sys::power::{self, PowerSupplies};
-use crate::sys::task::Task;
-use crate::sys::{paths, sysinfo};
-use crate::ui::widgets::{self, clickable_card, paint_icon, truncated_galley, ButtonKind};
+use material_3_ui::sys::task::Task;
+use crate::sys::sysinfo;
+use material_3_ui::sys::paths;
+use material_3_ui::widgets::{self, clickable_card, paint_icon, truncated_galley, ButtonKind};
 use crate::ui::{Action, Page};
 use chrono::Timelike;
 use egui::{pos2, vec2, Color32, FontId, Id, Rect, RichText, Sense, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::time::Duration;
 
 #[derive(Clone, Default)]
@@ -165,7 +166,10 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     let user = std::env::var("USER").unwrap_or_default();
     let distro = app.os.pretty_name.clone();
     let installed_count = app.installed.len();
-    let terminal = crate::sys::term::pick(&app.config.terminal);
+    let terminal = material_3_ui::sys::term::pick(&app.config.terminal);
+    super::material_apps::poll(app);
+    let material = super::material_apps::summary(app);
+    let st = &mut app.pages.overview;
 
     egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
         egui::Frame::new().inner_margin(egui::Margin::symmetric(32, 28)).show(ui, |ui| {
@@ -182,7 +186,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
             ui.label(RichText::new(sub.join("  ·  ")).size(15.0).color(p.on_surface_variant));
 
             if !app.os.is_arch_based() {
-                crate::ui::common::banner(ui, ICON_WARNING, "This app is made for Arch Linux. Package management and some pages need pacman and systemd.", false, |_| {});
+                material_3_ui::common::banner(ui, ICON_WARNING, "This app is made for Arch Linux. Package management and some pages need pacman and systemd.", false, |_| {});
             }
 
             // ------------------------------------------------- quick tiles
@@ -194,7 +198,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 (p.tertiary_container, p.on_tertiary_container),
             ];
             let tiles = vec![
-                Tile { page: Page::Appearance, subtitle: "Themes, icons, cursor and fonts".into(), accent: accents[0] },
+                Tile { page: Page::Appearance, subtitle: "Wallpaper, themes, icons and fonts".into(), accent: accents[0] },
                 Tile { page: Page::Display, subtitle: "Resolution, scale and refresh rate".into(), accent: accents[1] },
                 Tile { page: Page::Sound, subtitle: "Output, input and volume".into(), accent: accents[2] },
                 Tile { page: Page::Network, subtitle: "Wi-Fi and connections".into(), accent: accents[0] },
@@ -244,6 +248,18 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                     actions.push(Action::Goto(Page::End4));
                 }
             });
+            let total = crate::material_apps::APPS.len();
+            let text = match material {
+                Some((n, 0)) => format!("{n} of {total} installed. Music, Games, Browser, AI, Viewer, Text, Monitor and Calendar are a click away."),
+                Some((n, u)) => format!("{n} of {total} installed, {u} update{} available.", if u == 1 { "" } else { "s" }),
+                None => "Music, Games, Browser, AI, Viewer, Text, Monitor and Calendar, made to match this desktop.".into(),
+            };
+            desktop_card(ui, ICON_WIDGETS, (p.primary_container, p.on_primary_container), "Material 3 apps", &text, |ui| {
+                let updates = material.is_some_and(|(_, u)| u > 0);
+                if widgets::button(ui, ButtonKind::Filled, Some(if updates { ICON_UPDATE } else { ICON_APPS }), if updates { "Update" } else { "Manage" }).clicked() {
+                    actions.push(Action::Goto(Page::MaterialApps));
+                }
+            });
 
             // ------------------------------------------------ configs
             let total = catalog::APPS.len();
@@ -270,7 +286,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
 
             if terminal.is_none() {
                 ui.add_space(16.0);
-                crate::ui::common::banner(ui, ICON_TERMINAL, "No terminal emulator found. Installing packages opens a terminal; pick or install one in Preferences.", false, |ui| {
+                material_3_ui::common::banner(ui, ICON_TERMINAL, "No terminal emulator found. Installing packages opens a terminal; pick or install one in Preferences.", false, |ui| {
                     if widgets::button(ui, ButtonKind::Tonal, None, "Preferences").clicked() {
                         actions.push(Action::Goto(Page::Preferences));
                     }

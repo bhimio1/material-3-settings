@@ -1,18 +1,15 @@
-//! Talking to the system: running commands, background tasks, Arch/pacman
-//! specifics, and paths.
+//! Talking to the system: audio, Bluetooth, GTK, default apps, networks,
+//! pacman, power, sched_ext, system info and time. Commands, background
+//! tasks, paths, terminals and the Arch helpers come from
+//! `material_3_ui::sys`.
 
-pub mod arch;
 pub mod audio;
 pub mod bt;
-pub mod cmd;
 pub mod gtk;
 pub mod mime;
 pub mod net;
 pub mod pacman;
-pub mod scx;
-pub mod paths;
 pub mod power;
+pub mod scx;
 pub mod sysinfo;
-pub mod task;
-pub mod term;
 pub mod time;

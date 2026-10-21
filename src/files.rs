@@ -2,7 +2,8 @@
 //! backups, and noticing changes made by other programs.
 
 use crate::formats::{self, Format};
-use crate::sys::paths;
+use material_3_ui::fs::{self as m3fs, Backups, SaveError};
+use material_3_ui::sys::paths;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -86,30 +87,18 @@ impl ConfigFile {
         self.format.validate(&self.text)
     }
 
+    /// Write the buffer, through symlinks. With `backups`, the file's
+    /// previous contents are copied to the backup folder first.
     pub fn save(&mut self, backups: bool) -> Result<(), String> {
-        // Write through symlinks (stow/chezmoi-managed dotfiles) instead of
-        // replacing the link with a regular file.
-        let target = std::fs::canonicalize(&self.path).unwrap_or_else(|_| self.path.clone());
-        if let Some(parent) = target.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-        if backups && self.disk.is_some() {
-            backup(&target).map_err(|e| format!("couldn't back up: {e}"))?;
-        }
-        let tmp = target.with_extension(format!(
-            "{}m3s-tmp",
-            target
-                .extension()
-                .map(|e| format!("{}.", e.to_string_lossy()))
-                .unwrap_or_default()
-        ));
-        std::fs::write(&tmp, &self.text).map_err(|e| e.to_string())?;
-        if let Ok(meta) = std::fs::metadata(&target) {
-            let _ = std::fs::set_permissions(&tmp, meta.permissions());
-        }
-        std::fs::rename(&tmp, &target).map_err(|e| {
-            let _ = std::fs::remove_file(&tmp);
-            e.to_string()
+        let bytes = self.text.as_bytes();
+        let result = if backups && self.disk.is_some() {
+            backup_store().save(&self.path, bytes)
+        } else {
+            m3fs::save(&self.path, bytes)
+        };
+        result.map_err(|e| match e {
+            SaveError::NeedsRoot => "permission denied".to_string(),
+            SaveError::Io(e) => e,
         })?;
         self.disk = Some(self.text.clone());
         self.mtime = mtime(&self.path);
@@ -132,59 +121,15 @@ impl ConfigFile {
     }
 }
 
-fn backup_dir() -> PathBuf {
-    paths::state_dir().join("backups")
-}
-
-/// Backups of `path` are named after its full path so files with the same
-/// name in different folders don't collide.
-fn backup_stem(path: &Path) -> String {
-    path.to_string_lossy()
-        .trim_start_matches('/')
-        .replace('/', "%")
-}
-
-/// Copy `path` into the backup folder with a timestamp. Keeps the newest 20.
-pub fn backup(path: &Path) -> std::io::Result<PathBuf> {
-    let dir = backup_dir();
-    std::fs::create_dir_all(&dir)?;
-    let stamp = chrono::Local::now().format("%Y%m%d-%H%M%S%.3f");
-    let dest = dir.join(format!("{}@{stamp}", backup_stem(path)));
-    std::fs::copy(path, &dest)?;
-    let old = list_backups(path);
-    for stale in old.iter().skip(20) {
-        let _ = std::fs::remove_file(stale);
-    }
-    Ok(dest)
+/// Where copies of config files go before they're overwritten: the newest
+/// 20 per file, named after the file's full path and the time.
+pub fn backup_store() -> Backups {
+    Backups::new(paths::state_dir("m3-settings").join("backups"), 20)
 }
 
 /// Backups of `path`, newest first.
 pub fn list_backups(path: &Path) -> Vec<PathBuf> {
-    let target = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
-    let prefix = format!("{}@", backup_stem(&target));
-    let mut found: Vec<PathBuf> = std::fs::read_dir(backup_dir())
-        .map(|rd| {
-            rd.flatten()
-                .map(|e| e.path())
-                .filter(|p| {
-                    p.file_name()
-                        .is_some_and(|n| n.to_string_lossy().starts_with(&prefix))
-                })
-                .collect()
-        })
-        .unwrap_or_default();
-    found.sort();
-    found.reverse();
-    found
-}
-
-/// "2026-10-20 14:03" from a backup file name.
-pub fn backup_label(backup: &Path) -> String {
-    let name = backup.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-    let stamp = name.rsplit('@').next().unwrap_or_default();
-    chrono::NaiveDateTime::parse_from_str(stamp, "%Y%m%d-%H%M%S%.3f")
-        .map(|t| t.format("%Y-%m-%d %H:%M:%S").to_string())
-        .unwrap_or_else(|_| stamp.to_string())
+    backup_store().list(path)
 }
 
 #[cfg(test)]

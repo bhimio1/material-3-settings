@@ -1,6 +1,6 @@
 //! Time zone, NTP and locale through systemd's `timedatectl` / `localectl`.
 
-use super::cmd;
+use material_3_ui::sys::cmd;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Default, PartialEq)]

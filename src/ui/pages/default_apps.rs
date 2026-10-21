@@ -1,13 +1,13 @@
 //! Default applications per file type, through `xdg-mime`.
 
 use crate::app::App;
-use crate::sys::mime::{self, DesktopEntry, CATEGORIES};
-use crate::sys::task::Task;
-use crate::ui::common::{self, card, row};
-use crate::ui::widgets::{self, ButtonKind};
-use crate::ui::{toast, ToastKind};
+use crate::sys::mime::{self, Category, DesktopEntry, CATEGORIES};
+use material_3_ui::sys::task::Task;
+use material_3_ui::common::{self, card, row};
+use material_3_ui::widgets::{self, ButtonKind};
+use crate::ui::{toast, Actions, ToastKind};
 use egui::{RichText, Ui};
-use egui_material_icons::{icons::*, MaterialIcon};
+use material_3_ui::icons::{icons::*, MaterialIcon};
 use std::collections::BTreeMap;
 
 #[derive(Default)]
@@ -37,11 +37,15 @@ fn picker(
     ui.horizontal(|ui| {
         widgets::icon(ui, icon, 24.0, p.primary);
         ui.add_space(4.0);
-        ui.vertical(|ui| {
-            ui.set_max_width((ui.available_width() - 280.0).max(160.0));
+        if desc.is_empty() {
             ui.label(RichText::new(label).size(14.5).color(p.on_surface));
-            ui.label(RichText::new(desc).size(12.0).color(p.on_surface_variant));
-        });
+        } else {
+            ui.vertical(|ui| {
+                ui.set_max_width((ui.available_width() - 280.0).max(160.0));
+                ui.label(RichText::new(label).size(14.5).color(p.on_surface));
+                ui.label(RichText::new(desc).size(12.0).color(p.on_surface_variant));
+            });
+        }
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             let current_name = current
                 .map(|id| {
@@ -83,30 +87,81 @@ fn picker(
     chosen
 }
 
-pub fn show(ui: &mut Ui, app: &mut App) {
-    let ctx = app.ctx.clone();
-    let st = &mut app.pages.default_apps;
-    let actions = &mut app.actions;
-    let has_xdg_mime = crate::sys::cmd::exists("xdg-mime");
-
-    st.apps.ensure(&ctx, mime::scan);
+fn sync(st: &mut State, ctx: &egui::Context, actions: &mut Actions, has_xdg_mime: bool) {
+    st.apps.ensure(ctx, mime::scan);
     if has_xdg_mime {
-        st.defaults.ensure(&ctx, load_defaults);
+        st.defaults.ensure(ctx, load_defaults);
     }
     if let Some(result) = st.op.take() {
         match result {
             Ok(msg) => toast(actions, msg, ToastKind::Success),
             Err(e) => toast(actions, e, ToastKind::Error),
         }
-        st.defaults.spawn(&ctx, load_defaults);
+        st.defaults.spawn(ctx, load_defaults);
     }
+}
+
+/// Pick a category's default and set it in the background.
+fn category_picker(ui: &mut Ui, st: &mut State, ctx: &egui::Context, apps: &[DesktopEntry], defaults: &BTreeMap<&'static str, String>, cat: &'static Category, desc: &str) {
+    let candidates = mime::candidates(apps, cat);
+    if let Some(id) = picker(ui, cat.key, cat.icon, cat.label, desc, defaults.get(cat.key), &candidates) {
+        let types: Vec<&'static str> = cat.types.to_vec();
+        let label = cat.label;
+        let name = candidates.iter().find(|c| c.id == id).map(|c| c.name.clone()).unwrap_or_default();
+        st.op.spawn(ctx, move || mime::set_default(&id, &types).map(|_| format!("{label}: {name}")));
+    }
+}
+
+fn terminal_picker(ui: &mut Ui, st: &mut State, ctx: &egui::Context, apps: &[DesktopEntry], defaults: &BTreeMap<&'static str, String>, desc: &str) {
+    let terms = mime::terminals(apps);
+    if let Some(id) = picker(ui, "terminal", ICON_TERMINAL, "Terminal emulator", desc, defaults.get("terminal"), &terms) {
+        st.op.spawn(ctx, move || mime::set_default_terminal(&id).map(|_| format!("Default terminal: {id}")));
+    }
+}
+
+/// The everyday defaults (browser, files, terminal, …) in one card without
+/// descriptions, for the welcome flow.
+pub fn compact(ui: &mut Ui, app: &mut App, keys: &[&str]) {
+    let ctx = app.ctx.clone();
+    let installed = app.installed.clone();
+    let st = &mut app.pages.default_apps;
+    let actions = &mut app.actions;
+    let has_xdg_mime = material_3_ui::sys::cmd::exists("xdg-mime");
+    sync(st, &ctx, actions, has_xdg_mime);
+    if !crate::ui::require(ui, actions, &installed, "xdg-mime", "xdg-utils", "It reads and sets default applications.") {
+        return;
+    }
+    let (Some(apps), Some(defaults)) = (st.apps.value.clone(), st.defaults.value.clone()) else {
+        card(ui, "", |ui| common::loading(ui, "Looking for installed apps…"));
+        return;
+    };
+    card(ui, "", |ui| {
+        for (i, key) in keys.iter().enumerate() {
+            if i > 0 {
+                ui.separator();
+            }
+            if *key == "terminal" {
+                terminal_picker(ui, st, &ctx, &apps, &defaults, "");
+            } else if let Some(cat) = CATEGORIES.iter().find(|c| c.key == *key) {
+                category_picker(ui, st, &ctx, &apps, &defaults, cat, "");
+            }
+        }
+    });
+}
+
+pub fn show(ui: &mut Ui, app: &mut App) {
+    let ctx = app.ctx.clone();
+    let st = &mut app.pages.default_apps;
+    let actions = &mut app.actions;
+    let has_xdg_mime = material_3_ui::sys::cmd::exists("xdg-mime");
+    sync(st, &ctx, actions, has_xdg_mime);
 
     let installed = app.installed.clone();
     common::page(ui, ICON_APPS, "Default apps", "Which app opens links, folders and each kind of file.", |ui| {
-        if !common::require(ui, actions, &installed, "xdg-mime", "xdg-utils", "It reads and sets default applications.") {
+        if !crate::ui::require(ui, actions, &installed, "xdg-mime", "xdg-utils", "It reads and sets default applications.") {
             return;
         }
-        let (Some(apps), Some(defaults)) = (&st.apps.value, &st.defaults.value) else {
+        let (Some(apps), Some(defaults)) = (st.apps.value.clone(), st.defaults.value.clone()) else {
             card(ui, "", |ui| common::loading(ui, "Looking for installed apps…"));
             return;
         };
@@ -115,27 +170,17 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                 if i > 0 {
                     ui.separator();
                 }
-                let candidates = mime::candidates(apps, cat);
-                let desc = cat.types.join(", ");
-                if let Some(id) = picker(ui, cat.key, cat.icon, cat.label, &desc, defaults.get(cat.key), &candidates) {
-                    let types: Vec<&'static str> = cat.types.to_vec();
-                    let label = cat.label;
-                    let name = candidates.iter().find(|c| c.id == id).map(|c| c.name.clone()).unwrap_or_default();
-                    st.op.spawn(&ctx, move || mime::set_default(&id, &types).map(|_| format!("{label}: {name}")));
-                }
+                category_picker(ui, st, &ctx, &apps, &defaults, cat, &cat.types.join(", "));
             }
         });
 
         card(ui, "Terminal", |ui| {
-            let terms = mime::terminals(apps);
             let desc = format!(
                 "Used by apps that launch a terminal through xdg-terminal-exec{}. Saved in {}.",
-                if crate::sys::cmd::exists("xdg-terminal-exec") { "" } else { " (not installed)" },
-                crate::sys::paths::tilde(&mime::terminals_list_path())
+                if material_3_ui::sys::cmd::exists("xdg-terminal-exec") { "" } else { " (not installed)" },
+                material_3_ui::sys::paths::tilde(&mime::terminals_list_path())
             );
-            if let Some(id) = picker(ui, "terminal", ICON_TERMINAL, "Terminal emulator", &desc, defaults.get("terminal"), &terms) {
-                st.op.spawn(&ctx, move || mime::set_default_terminal(&id).map(|_| format!("Default terminal: {id}")));
-            }
+            terminal_picker(ui, st, &ctx, &apps, &defaults, &desc);
             ui.separator();
             row(ui, "Terminal for this app", "Package installs and other commands from Settings open in the terminal chosen in Preferences.", |ui| {
                 if widgets::button(ui, ButtonKind::Text, Some(ICON_SETTINGS), "Preferences").clicked() {
