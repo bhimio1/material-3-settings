@@ -268,6 +268,27 @@ pub const APPS: &[MaterialApp] = &[
         service: Some("m3-calendar.service"),
         npm_extension: false,
     },
+    MaterialApp {
+        id: "comics",
+        bin: "m3-comics",
+        name: "Comics",
+        repo: "bhimio1/material-3-comics",
+        desktop_id: "material_3_comics",
+        aur: "material-3-comics",
+        icon: ICON_AUTO_STORIES,
+        summary: "Manga and comics, like Mihon",
+        description: "A library, updates, downloads and AniList tracking for manga and comics. \
+                      Reads your CBZ and CBR files, MangaDex, and Mihon's extensions through Suwayomi.",
+        essential: false,
+        needs: &[
+            need(&["bsdtar"], "libarchive", "Opens CBR, CB7 and CBT files", false),
+            need(&["suwayomi-server"], "suwayomi-server-bin", "Runs Mihon's extensions as sources", false),
+            need(&["secret-tool"], "libsecret", "Keeps the AniList sign-in in your keyring", false),
+        ],
+        share: None,
+        service: None,
+        npm_extension: false,
+    },
 ];
 
 /// Find an app by short name or binary (`music` or `m3-music`).
@@ -541,6 +562,7 @@ mod tests {
         assert_eq!(find("files").unwrap().desktop_id, "material_3_file_manager");
         assert_eq!(find("viewer").unwrap().repo, "bhimio1/material-3-veiwer");
         assert_eq!(find("calendar").unwrap().service, Some("m3-calendar.service"));
+        assert_eq!(find("m3-comics").unwrap().desktop_id, "material_3_comics");
         assert!(find("nope").is_none());
     }
 

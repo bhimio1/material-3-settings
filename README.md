@@ -55,6 +55,7 @@ The **Material 3 apps** page (Desktop → Material 3 apps, or `m3-settings mater
 | Text | `m3-text` | a text editor |
 | Monitor | `m3-monitor` | processes and system resources |
 | Calendar | `m3-calendar` | Google, Microsoft, iCloud and local calendars |
+| Comics | `m3-comics` | a manga and comics reader, like Mihon |
 
 - **Essential apps:** Settings, Files and Screenshots. The end4-pC shell depends on them, so it installs them itself. Here you can update or repair them, but not remove them.
 - **Optional apps:** everything else. You install them from this page.
@@ -64,7 +65,7 @@ The **Material 3 apps** page (Desktop → Material 3 apps, or `m3-settings mater
   3. **Build from source:** `git clone`, then `cargo build --release` in a terminal (plus `npm` for the browser extension). This is used when there is no release.
 - **Updates:** releases are checked at most every 6 hours and cached in `~/.cache/m3-settings/material-apps`. When GitHub's rate limit is hit, the cached result is used.
 - **Shared records:** release and source installs are recorded in `~/.local/state/quickshell/user/material-apps/<command>.version`, the same files the shell's installer writes. So the page also updates apps that the shell installed, and the shell's installer recognises apps installed here.
-- **Each app's page:** shows what the app needs (mpv, yt-dlp, gamescope, …) with an Install button for each. It also has Open, Update, Remove and the project page. Calendar offers to start its background service (`systemctl --user enable --now m3-calendar.service`).
+- **Each app's page:** shows what the app needs (mpv, yt-dlp, gamescope, Suwayomi, …) with an Install button for each. It also has Open, Update, Remove and the project page. Calendar offers to start its background service (`systemctl --user enable --now m3-calendar.service`).
 - **Command line:** the shell opens this page with `m3-settings material-apps`, or one app's page with `m3-settings material-apps <app>`. `<app>` can be the command (`m3-music`) or the short name (`music`).
 
 ![Material 3 apps](docs/screenshot-material-apps.png)
