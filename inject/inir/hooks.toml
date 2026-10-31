@@ -1,0 +1,17 @@
+# Hooks for iNiR. Same format as inject/ii/hooks.toml.
+
+[[hook]]
+id = "import"
+feature = "core"
+file = "shell.qml"
+anchor = '^ShellRoot\s*\{'
+action = "before"
+text = 'import "m3"'
+
+[[hook]]
+id = "root"
+feature = "core"
+file = "shell.qml"
+anchor = '^ShellRoot\s*\{'
+action = "after"
+text = "    M3Root {}"

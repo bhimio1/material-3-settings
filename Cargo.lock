@@ -1753,6 +1753,7 @@ dependencies = [
  "fuzzy-matcher",
  "log",
  "material-3-ui",
+ "regex",
  "serde",
  "serde_json",
  "sha2",

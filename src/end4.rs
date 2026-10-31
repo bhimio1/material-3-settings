@@ -314,8 +314,21 @@ pub fn clone_fork(home: &Path) -> Result<String, String> {
 }
 
 pub fn update_shell(home: &Path, name: &str) -> Result<String, String> {
+    use crate::inject;
     let dir = shell_dir(home, name);
-    let out = cmd::run("git", &["-C", &dir.to_string_lossy(), "pull", "--ff-only"])?;
+    // Our edits are local changes git would refuse to pull over: take them
+    // out first and put them back after.
+    let injected = inject::Target::parse(name)
+        .filter(|t| inject::status(home, *t).state != inject::State::Clean && inject::status(home, *t).state != inject::State::NotInstalled);
+    if let Some(t) = injected {
+        inject::remove(home, t)?;
+    }
+    let pulled = cmd::run("git", &["-C", &dir.to_string_lossy(), "pull", "--ff-only"]);
+    if let Some(t) = injected {
+        inject::apply(home, t)?;
+        inject::watcher::sync(home)?;
+    }
+    let out = pulled?;
     let out = out.trim();
     Ok(if out.contains("Already up to date") {
         format!("{name} is already up to date")

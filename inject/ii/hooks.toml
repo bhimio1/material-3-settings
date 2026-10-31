@@ -1,0 +1,20 @@
+# Hooks for end-4's illogical-impulse (ii) and pctrade's end4-pC.
+# Each one is a small, marked edit to an upstream file; see
+# src/inject/hooks.rs for the format. A feature goes in only when all of its
+# hooks find their line. `only = ["end4-pC"]` limits a hook to one shell.
+
+[[hook]]
+id = "import"
+feature = "core"
+file = "shell.qml"
+anchor = '^ShellRoot\s*\{'
+action = "before"
+text = 'import "m3"'
+
+[[hook]]
+id = "root"
+feature = "core"
+file = "shell.qml"
+anchor = '^ShellRoot\s*\{'
+action = "after"
+text = "    M3Root {}"

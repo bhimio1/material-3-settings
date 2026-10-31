@@ -46,6 +46,15 @@ impl App {
 
         let mut installed_task = Task::default();
         installed_task.spawn(&ctx, arch::installed_packages);
+        // Catch-all for shell updates the path unit missed (it wasn't
+        // running, or the shell moved): put the integration back.
+        std::thread::spawn(|| {
+            for (t, r) in crate::inject::reapply_all(&material_3_ui::sys::paths::home()) {
+                if let Err(e) = r {
+                    log::warn!("re-adding the Material 3 integration to {}: {e}", t.id());
+                }
+            }
+        });
 
         let mut app = Self {
             palette: theme.palette().clone(),
