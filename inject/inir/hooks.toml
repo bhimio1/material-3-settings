@@ -1,4 +1,7 @@
-# Hooks for iNiR. Same format as inject/ii/hooks.toml.
+# Hooks for iNiR. Same format as inject/ii/hooks.toml. iNiR runs on Niri,
+# which takes screenshots itself, so there's no screenshots feature here.
+
+# ------------------------------------------------------------------ core
 
 [[hook]]
 id = "import"
@@ -15,3 +18,47 @@ file = "shell.qml"
 anchor = '^ShellRoot\s*\{'
 action = "after"
 text = "    M3Root {}"
+
+# ------------------------------------------------- welcome → m3-settings
+
+[[hook]]
+id = "welcome-import"
+feature = "welcome"
+file = "services/FirstRunExperience.qml"
+anchor = '^Singleton\s*\{'
+action = "before"
+text = "import qs.m3"
+
+[[hook]]
+id = "welcome-command"
+feature = "welcome"
+file = "services/FirstRunExperience.qml"
+anchor = '^\s*Quickshell\.execDetached\(\[Quickshell\.shellPath\("scripts/inir"\), "welcome"\]\)'
+action = "replace"
+text = '''        Quickshell.execDetached(["bash", "-c", M3.welcomeCommand(`exec '${Quickshell.shellPath("scripts/inir")}' welcome`)])'''
+
+# ------------------------------------------- games: right-click Game Mode
+
+[[hook]]
+id = "games-import"
+feature = "games"
+file = "modules/common/models/quickToggles/GameModeToggle.qml"
+anchor = '^QuickToggleModel\s*\{'
+action = "before"
+text = """
+import qs
+import qs.m3"""
+
+[[hook]]
+id = "games-altaction"
+feature = "games"
+file = "modules/common/models/quickToggles/GameModeToggle.qml"
+anchor = '^\s*tooltipText:'
+unless = '^\s*altAction:'
+action = "before"
+text = """
+    // Right-click opens the game library (Material 3 Games), with full Game Mode.
+    altAction: () => {
+        GlobalStates.sidebarRightOpen = false;
+        M3.gamesOpen = true;
+    }"""

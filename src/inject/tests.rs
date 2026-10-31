@@ -46,7 +46,15 @@ fn every_pack_parses() {
         assert!(hooks.iter().any(|h| h.feature == "core"), "{pack} has no core hooks");
         assert!(pack_files(pack).iter().any(|(p, _)| *p == "m3/M3Root.qml"));
     }
-    assert!(pack_files("dux").iter().any(|(p, _)| *p == "Material3/plugin.json"));
+    let dux = pack_files("dux");
+    let manifest = dux.iter().find(|(p, _)| *p == "Material3/plugin.json").expect("dux plugin.json");
+    let m: serde_json::Value = serde_json::from_str(manifest.1).unwrap();
+    assert_eq!(m["id"], DUX_PLUGIN_ID);
+    // Every component the manifest names ships with the plugin.
+    for (_, file) in m["components"].as_object().unwrap() {
+        let rel = format!("Material3/{}", file.as_str().unwrap().trim_start_matches("./"));
+        assert!(dux.iter().any(|(p, _)| *p == rel), "{rel} missing");
+    }
 }
 
 #[test]
@@ -60,10 +68,9 @@ fn applies_to_each_upstream_and_removes_cleanly() {
         let report = apply(&home, t).unwrap();
         assert_eq!(report.skipped, vec![], "{}", t.id());
         assert!(report.features.contains(&"core".to_string()));
-        if t != Target::Inir {
-            for f in ["screenshots", "welcome", "games", "calendar"] {
-                assert!(report.features.contains(&f.to_string()), "{} misses {f}", t.id());
-            }
+        let expected: &[&str] = if t == Target::Inir { &["welcome", "games"] } else { &["screenshots", "welcome", "games", "calendar"] };
+        for f in expected {
+            assert!(report.features.contains(&f.to_string()), "{} misses {f}", t.id());
         }
         let shell = fs::read_to_string(dir.join("shell.qml")).unwrap();
         assert!(shell.contains("import qs.m3\n"), "{}", t.id());

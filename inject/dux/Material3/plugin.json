@@ -1,12 +1,20 @@
 {
     "id": "material3",
     "name": "Material 3 apps",
-    "description": "Connects Dux Shell to the Material 3 apps. Added by Material 3 Settings.",
-    "version": "0.1.0",
+    "description": "Connects Dux Shell to the Material 3 apps: a game library tab, a Game Mode tile and Material 3 Settings' welcome. Added by Material 3 Settings.",
+    "version": "0.2.0",
     "author": "Material 3 Settings",
-    "type": "daemon",
-    "capabilities": ["material-3-apps"],
-    "component": "./Material3Daemon.qml",
+    "type": "composite",
+    "capabilities": ["daemon", "control-center", "dash-tab"],
     "icon": "palette",
-    "permissions": ["settings_read"]
+    "components": {
+        "daemon": "./Material3Daemon.qml",
+        "widget": "./GameModeTile.qml",
+        "dash": "./GamesTab.qml"
+    },
+    "dash": {
+        "title": "Games"
+    },
+    "requires_dms": ">=1.7.0",
+    "permissions": ["settings_read", "settings_write"]
 }

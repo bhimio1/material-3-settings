@@ -16,7 +16,8 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property string libraryPath: FileUtils.trimFileProtocol(`${Directories.cache}/m3-games/library.json`)
+    // The app's own cache folder (Directories.cache is the shell's, ~/.cache/quickshell).
+    readonly property string libraryPath: `${Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache"}/m3-games/library.json`
     property var games: []
     readonly property var recent: games.filter(g => g.last_played).slice(0, 8)
     property bool available: false
