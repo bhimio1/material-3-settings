@@ -28,9 +28,11 @@ shells, login, apps, preferences, or the id of an app on the Apps page
   welcome               same as --welcome
   inject [CMD] [SHELL]  add the Material 3 integration to a stock shell
                         (ii, end4-pC, inir, dux) without opening a window.
-                        CMD is status (default), apply, remove, or reapply
+                        CMD is status (default), apply, remove, reapply
                         (every shell it was added to whose update replaced
-                        it; the systemd path unit runs this)
+                        it; the systemd path unit runs this), or migrate
+                        (replace the old bhimio1/end4-pC fork with
+                        pctrade's end4-pC plus the integration)
   login [CMD]           the login screen and boot animation: status
                         (default), sync (copy the shell's look to the
                         login screen; a systemd path unit runs this),
@@ -238,6 +240,14 @@ fn inject_cli(args: Vec<String>) -> i32 {
                 }
             }
         }
+        "migrate" => {
+            // The old bhimio1/end4-pC fork → pctrade's, with the integration.
+            if !end4::is_old_fork(&end4::shell_dir(&home, end4::FORK)) {
+                println!("end4-pC isn't the old bhimio1 fork; nothing to do");
+                return 0;
+            }
+            return report(end4::switch_from_old_fork(&home));
+        }
         "reapply" => {
             for (t, r) in inject::reapply_all(&home) {
                 match r {
@@ -250,7 +260,7 @@ fn inject_cli(args: Vec<String>) -> i32 {
             }
         }
         other => {
-            eprintln!("Unknown inject command: {other} (status, apply, remove or reapply)");
+            eprintln!("Unknown inject command: {other} (status, apply, remove, reapply or migrate)");
             return 2;
         }
     }
