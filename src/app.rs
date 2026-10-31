@@ -46,6 +46,24 @@ impl App {
 
         let mut installed_task = Task::default();
         installed_task.spawn(&ctx, arch::installed_packages);
+        // Catch-all for shell updates the path unit missed (it wasn't
+        // running, or the shell moved): put the integration back.
+        std::thread::spawn(|| {
+            for (t, r) in crate::inject::reapply_all(&material_3_ui::sys::paths::home()) {
+                if let Err(e) = r {
+                    log::warn!("re-adding the Material 3 integration to {}: {e}", t.id());
+                }
+            }
+            // A login screen installed by the old end4-pC fork was kept in
+            // step by its wallpaper script; ours watches style.json instead.
+            let home = material_3_ui::sys::paths::home();
+            let unit = crate::inject::watcher::unit_dir(&home).join(format!("{}.path", crate::login::LOGIN_WATCH.unit));
+            if std::path::Path::new(crate::login::SDDM_SYNC_DIR).is_dir() && !unit.exists() {
+                if let Err(e) = crate::login::sync_watcher(&home) {
+                    log::warn!("watching the style for the login screen: {e}");
+                }
+            }
+        });
 
         let mut app = Self {
             palette: theme.palette().clone(),

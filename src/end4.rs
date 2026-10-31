@@ -15,10 +15,12 @@ use std::sync::OnceLock;
 
 pub const UPSTREAM: &str = "ii";
 pub const FORK: &str = "end4-pC";
-/// bhimio1's end4-pC, a fork of pctrade's that uses Material 3 Settings,
-/// the Material 3 File Manager and Material 3 Music.
-pub const FORK_REPO: &str = "https://github.com/bhimio1/end4-pC.git";
-pub const FORK_URL: &str = "https://github.com/bhimio1/end4-pC";
+/// pctrade's end4-pC. Material 3 Settings adds its integration to it (see
+/// `inject`) instead of shipping a fork.
+pub const FORK_REPO: &str = "https://github.com/pctrade/end4-pC.git";
+pub const FORK_URL: &str = "https://github.com/pctrade/end4-pC";
+/// bhimio1's retired fork of it, which carried the integration itself.
+pub const OLD_FORK: &str = "bhimio1/end4-pC";
 pub const UPSTREAM_URL: &str = "https://github.com/end-4/dots-hyprland";
 
 pub fn quickshell_dir(home: &Path) -> PathBuf {
@@ -40,6 +42,8 @@ pub struct Install {
     pub installed: bool,
     /// `abc1234 · 3 days ago` when the folder is a git checkout.
     pub commit: Option<String>,
+    /// A checkout of the retired bhimio1/end4-pC fork.
+    pub old_fork: bool,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -79,7 +83,22 @@ fn install(home: &Path, name: &str) -> Install {
     } else {
         None
     };
-    Install { installed, commit }
+    let old_fork = installed && is_old_fork(&dir);
+    Install { installed, commit, old_fork }
+}
+
+/// Is this checkout the retired fork (its `origin` is bhimio1/end4-pC)?
+pub fn is_old_fork(dir: &Path) -> bool {
+    if !dir.join(".git").exists() {
+        return false;
+    }
+    cmd::run("git", &["-C", &dir.to_string_lossy(), "remote", "get-url", "origin"])
+        .is_ok_and(|url| remote_is_old_fork(&url))
+}
+
+pub fn remote_is_old_fork(url: &str) -> bool {
+    let u = url.trim().trim_end_matches('/').trim_end_matches(".git").to_lowercase();
+    u.ends_with(&OLD_FORK.to_lowercase())
 }
 
 /// Files that may set `qsConfig`, most specific first.
@@ -300,22 +319,70 @@ pub fn open_shell_settings(home: &Path, name: &str) -> Result<(), String> {
     }
 }
 
+/// Install pctrade's end4-pC and add the Material 3 integration to it.
 pub fn clone_fork(home: &Path) -> Result<String, String> {
     let dir = shell_dir(home, FORK);
     if dir.exists() {
         return Err(format!("{} already exists", dir.display()));
     }
     std::fs::create_dir_all(quickshell_dir(home)).map_err(|e| e.to_string())?;
-    cmd::run(
-        "git",
-        &["clone", "--depth", "1", FORK_REPO, &dir.to_string_lossy()],
-    )
-    .map(|_| "end4-pC installed".to_string())
+    cmd::run("git", &["clone", "--depth", "1", FORK_REPO, &dir.to_string_lossy()])?;
+    integrate(home)?;
+    Ok("end4-pC installed, with the Material 3 integration".into())
+}
+
+fn integrate(home: &Path) -> Result<(), String> {
+    use crate::inject;
+    inject::apply(home, inject::Target::End4Pc)?;
+    inject::watcher::sync(home)
+}
+
+/// Move a checkout of the retired fork aside, install pctrade's end4-pC in
+/// its place and add the Material 3 integration to it. Your settings live
+/// in ~/.config/illogical-impulse, so they carry over. Returns the backup.
+pub fn switch_from_old_fork(home: &Path) -> Result<String, String> {
+    let dir = shell_dir(home, FORK);
+    if !is_old_fork(&dir) {
+        return Err("end4-pC isn't the old bhimio1 fork".into());
+    }
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or_default();
+    let backup = quickshell_dir(home).join(format!("end4-pC.fork-backup-{stamp}"));
+    std::fs::rename(&dir, &backup).map_err(|e| format!("moving {} aside: {e}", dir.display()))?;
+    if let Err(e) = cmd::run("git", &["clone", "--depth", "1", FORK_REPO, &dir.to_string_lossy()]) {
+        // Put the fork back rather than leave no shell at all.
+        let _ = std::fs::remove_dir_all(&dir);
+        let _ = std::fs::rename(&backup, &dir);
+        return Err(format!("cloning {FORK_URL}: {e}"));
+    }
+    integrate(home)?;
+    // The fork's installer bound these keys; keep them working.
+    let _ = crate::keybinds::apply(home, true);
+    let _ = crate::login::sync_watcher(home);
+    if detect(home).running.iter().any(|r| r == FORK) {
+        restart_shell(FORK)?;
+    }
+    Ok(format!("Switched to pctrade's end4-pC. The old fork is in {}", backup.display()))
 }
 
 pub fn update_shell(home: &Path, name: &str) -> Result<String, String> {
+    use crate::inject;
     let dir = shell_dir(home, name);
-    let out = cmd::run("git", &["-C", &dir.to_string_lossy(), "pull", "--ff-only"])?;
+    // Our edits are local changes git would refuse to pull over: take them
+    // out first and put them back after.
+    let injected = inject::Target::parse(name)
+        .filter(|t| inject::status(home, *t).state != inject::State::Clean && inject::status(home, *t).state != inject::State::NotInstalled);
+    if let Some(t) = injected {
+        inject::remove(home, t)?;
+    }
+    let pulled = cmd::run("git", &["-C", &dir.to_string_lossy(), "pull", "--ff-only"]);
+    if let Some(t) = injected {
+        inject::apply(home, t)?;
+        inject::watcher::sync(home)?;
+    }
+    let out = pulled?;
     let out = out.trim();
     Ok(if out.contains("Already up to date") {
         format!("{name} is already up to date")
@@ -821,6 +888,32 @@ pub const ESSENTIALS: &[&str] = &[
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn spots_the_old_fork_remote() {
+        assert!(remote_is_old_fork("https://github.com/bhimio1/end4-pC.git\n"));
+        assert!(remote_is_old_fork("git@github.com:bhimio1/end4-pc"));
+        assert!(!remote_is_old_fork("https://github.com/pctrade/end4-pC.git"));
+    }
+
+    #[test]
+    fn switches_an_old_fork_checkout_to_pctrade() {
+        if !cmd::exists("git") {
+            return;
+        }
+        let tmp = tempfile::tempdir().unwrap();
+        let home = tmp.path();
+        let dir = shell_dir(home, FORK);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("shell.qml"), "ShellRoot {\n}\n").unwrap();
+        let d = dir.to_string_lossy().into_owned();
+        cmd::run("git", &["-C", &d, "init", "-q"]).unwrap();
+        cmd::run("git", &["-C", &d, "remote", "add", "origin", "https://github.com/bhimio1/end4-pC.git"]).unwrap();
+        assert!(install(home, FORK).old_fork);
+        cmd::run("git", &["-C", &d, "remote", "set-url", "origin", FORK_REPO]).unwrap();
+        assert!(!install(home, FORK).old_fork);
+        assert!(switch_from_old_fork(home).is_err());
+    }
+
     use super::*;
     use serde_json::json;
 

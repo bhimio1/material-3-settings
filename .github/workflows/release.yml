@@ -49,6 +49,7 @@ jobs:
           cp "target/release/$BIN" "$dir/"
           cp "packaging/$APP_ID.desktop" "$dir/"
           cp LICENSE assets/fonts/LICENSE-Inter.txt "$dir/"
+          cp -r login "$dir/"
           tar czf "$dir.tar.gz" "$dir"
           sha256sum "$dir.tar.gz" > "$dir.tar.gz.sha256"
           echo "sha256=$(cut -d' ' -f1 "$dir.tar.gz.sha256")" >> "$GITHUB_OUTPUT"

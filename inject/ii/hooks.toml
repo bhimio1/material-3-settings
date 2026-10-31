@@ -1,0 +1,167 @@
+# Hooks for end-4's illogical-impulse (ii) and pctrade's end4-pC.
+# Each one is a small, marked edit to an upstream file; see
+# src/inject/hooks.rs for the format. A feature goes in only when all of its
+# hooks find their line. `only = ["end4-pC"]` limits a hook to one shell.
+# Our code lives in m3/ (the qs.m3 module); hooks only call into it.
+
+# ------------------------------------------------------------------ core
+
+[[hook]]
+id = "import"
+feature = "core"
+file = "shell.qml"
+anchor = '^ShellRoot\s*\{'
+action = "before"
+text = "import qs.m3"
+
+[[hook]]
+id = "root"
+feature = "core"
+file = "shell.qml"
+anchor = '^ShellRoot\s*\{'
+action = "after"
+text = "    M3Root {}"
+
+# ----------------------------------------------- screenshots → m3-screenshots
+
+[[hook]]
+id = "screenshots-import"
+feature = "screenshots"
+file = "modules/common/utils/ScreenshotAction.qml"
+anchor = '^Singleton\s*\{'
+action = "before"
+text = "import qs.m3"
+
+[[hook]]
+id = "screenshots-command"
+feature = "screenshots"
+file = "modules/common/utils/ScreenshotAction.qml"
+anchor = '^\s*switch \(action\) \{'
+action = "before"
+text = """
+        // Material 3 Screenshots saves, copies and keeps a history of region captures.
+        const m3Command = M3.screenshotCommand(action === ScreenshotAction.Action.Copy ? "copy"
+            : action === ScreenshotAction.Action.Edit ? "edit" : "", cropToStdout, cleanup);
+        if (m3Command) return m3Command;"""
+
+# ------------------------------------------------- welcome → m3-settings
+
+[[hook]]
+id = "welcome-import"
+feature = "welcome"
+file = "services/FirstRunExperience.qml"
+anchor = '^Singleton\s*\{'
+action = "before"
+text = "import qs.m3"
+
+[[hook]]
+id = "welcome-command"
+feature = "welcome"
+file = "services/FirstRunExperience.qml"
+anchor = '^\s*Quickshell\.execDetached\(\["bash", "-c", `qs -p .\$\{root\.welcomeQmlPath\}.`\]\)'
+action = "replace"
+text = '        Quickshell.execDetached(["bash", "-c", M3.welcomeCommand(root.welcomeQmlPath)])'
+
+# ------------------------------------------- games: right-click Game Mode
+
+[[hook]]
+id = "games-import"
+feature = "games"
+file = "modules/common/models/quickToggles/GameModeToggle.qml"
+anchor = '^QuickToggleModel\s*\{'
+action = "before"
+text = """
+import qs
+import qs.m3"""
+
+[[hook]]
+id = "games-altaction"
+feature = "games"
+file = "modules/common/models/quickToggles/GameModeToggle.qml"
+anchor = '^\s*HyprlandConfigOption\s*\{'
+unless = '^\s*altAction:'
+action = "before"
+text = """
+    // Right-click opens the game library (Material 3 Games), with full Game Mode.
+    altAction: () => {
+        GlobalStates.sidebarRightOpen = false;
+        M3.gamesOpen = true;
+    }
+"""
+
+# ---------------------------- calendar: Material 3 Calendar events as dots
+
+[[hook]]
+id = "calendar-widget-import"
+feature = "calendar"
+file = "modules/ii/sidebarRight/calendar/CalendarWidget.qml"
+anchor = '^Item\s*\{'
+action = "before"
+text = "import qs.m3"
+
+[[hook]]
+id = "calendar-widget-range"
+feature = "calendar"
+file = "modules/ii/sidebarRight/calendar/CalendarWidget.qml"
+anchor = '^\s*property var calendarLayout:'
+action = "after"
+text = """
+    // First cell of the grid (a Monday), for Material 3 Calendar's events.
+    property date m3GridStart: {
+        const first = new Date(viewingDate.getFullYear(), viewingDate.getMonth(), 1);
+        first.setDate(first.getDate() - (first.getDay() + 6) % 7);
+        return first;
+    }
+    // A binding, so it runs on creation and whenever the month changes.
+    readonly property bool m3RangeSet: M3Calendar.setRange(m3GridStart, 42) ?? true
+    function m3CellDate(row, column) {
+        const d = new Date(m3GridStart);
+        d.setDate(d.getDate() + row * 7 + column);
+        return d;
+    }"""
+
+[[hook]]
+id = "calendar-widget-cells"
+feature = "calendar"
+file = "modules/ii/sidebarRight/calendar/CalendarWidget.qml"
+anchor = '^\s*isToday: calendarLayout\[modelData\]\[index\]\.today'
+action = "after"
+text = """
+                        eventColors: M3Calendar.available ? M3Calendar.colorsFor(m3CellDate(modelData, index)) : []
+                        releaseAction: M3Calendar.available ? () => M3Calendar.open(m3CellDate(modelData, index)) : null"""
+
+[[hook]]
+id = "calendar-day-property"
+feature = "calendar"
+file = "modules/ii/sidebarRight/calendar/CalendarDayButton.qml"
+anchor = '^\s*property bool bold\s*$'
+action = "after"
+text = """
+    /** Colors of the day's events from Material 3 Calendar, shown as dots. */
+    property var eventColors: []"""
+
+[[hook]]
+id = "calendar-day-dots"
+feature = "calendar"
+file = "modules/ii/sidebarRight/calendar/CalendarDayButton.qml"
+anchor = '^\}\s*$'
+action = "before"
+text = """
+    Row {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 4
+        spacing: 2
+        Repeater {
+            model: button.eventColors
+            delegate: Rectangle {
+                required property string modelData
+                width: 4
+                height: 4
+                radius: 2
+                color: (button.isToday == 1) ? Appearance.m3colors.m3onPrimary
+                    : (modelData !== "" ? modelData : Appearance.colors.colPrimary)
+                opacity: (button.isToday == -1) ? 0.5 : 1
+            }
+        }
+    }"""

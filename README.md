@@ -34,9 +34,40 @@ Anything interactive (installs, upgrades) opens in your terminal so you can see 
 
 [end4-pC](https://github.com/pctrade/end4-pC) is pctrade's fork of end-4's [illogical-impulse](https://github.com/end-4/dots-hyprland), and the most popular one. Both read `~/.config/illogical-impulse/config.json`, so this page works for either.
 - Detects which shells are installed, which one Hyprland starts, and whether it's running.
-- Installs or updates end4-pC (from [bhimio1/end4-pC](https://github.com/bhimio1/end4-pC), the fork that has these Material 3 apps built in), and makes either shell the default. The default is written to `~/.config/hypr/custom/variables.lua`, so dotfile updates don't undo it.
+- Installs or updates end4-pC (pctrade's, with the Material 3 integration added; see below), and makes either shell the default. The default is written to `~/.config/hypr/custom/variables.lua`, so dotfile updates don't undo it.
 - Restarts the shell and opens its settings overlay.
+- If `~/.config/quickshell/end4-pC` is a checkout of the retired [bhimio1/end4-pC](https://github.com/bhimio1/end4-pC) fork, offers **Switch to pctrade's end4-pC**: the old folder is moved to `end4-pC.fork-backup-<time>`, pctrade's is cloned in its place, the integration and the fork's keybinds are added, and the shell restarts. Your settings are in `~/.config/illogical-impulse`, so they carry over.
 - Covers all 588 options with proper controls: switches, sliders, and dropdowns built from the option comments. It has an Essentials card, section chips, search, and reset to default. Changes apply live and leave the rest of the file untouched.
+
+**Shell integration**
+
+The Material 3 changes used to live in a fork of end4-pC. The **Shell integration** page (Desktop → Shell integration, or `m3-settings inject`) adds them to the shell you already use instead, which keeps updating from its own developers:
+
+| Shell | How it's added |
+|---|---|
+| [illogical-impulse](https://github.com/end-4/dots-hyprland) (ii) and [end4-pC](https://github.com/pctrade/end4-pC) | An `m3/` folder in the shell, plus a few lines between `// m3:begin` / `// m3:end` markers in its files |
+| [iNiR](https://github.com/snowarch/iNiR) | The same; `inir update` replaces them and they're put back within seconds |
+| [Dux Shell](https://github.com/AvengeMedia/DankMaterialShell) (formerly DankMaterialShell) | A plugin in `~/.config/dms/plugins/Material3`, turned on in `plugin_settings.json`. The shell itself isn't touched |
+
+- On ii and end4-pC it adds: region captures go to Material 3 Screenshots, the first-run welcome is Settings' own, Game Mode's right-click opens the game library (Material 3 Games, also `qs -c <shell> ipc call games toggle`), the sidebar calendar shows Material 3 Calendar's events, and the Bluetooth and network buttons open Settings. Each needs its app installed and otherwise behaves as before.
+- On iNiR it adds Settings' welcome and the game library (Game Mode's right-click, or `inir ipc call games toggle`). Niri takes screenshots itself, and iNiR's calendar has its own sync, so those two are left as they are.
+- On Dux Shell, the plugin adds a **Games** dash tab (the Material 3 Games library), a **Game Mode** Control Center tile, and Settings' welcome the first time.
+- Every shell also gets the **style bridge**: the shell's resolved look (Material 3 colors, light/dark, fonts, rounding, transparency) is written to `~/.local/state/m3/style.json` whenever it changes, and the Material 3 apps read it through material-3-ui, so they follow the shell's presets and custom themes too.
+- Each edit finds one line in the upstream file. If an update changes that line, the feature that needs it is left out and listed on the page, and the rest still goes in. Without the core edit to `shell.qml` nothing is changed.
+- A systemd user path unit, `m3-shell-inject.path`, watches each shell's `shell.qml` (and iNiR's `.inir-manifest`) and runs `m3-settings inject reapply` after an update. Settings also re-applies when it starts, and **Update** on the end4-pC / ii page takes the edits out before `git pull` and puts them back after.
+- If the shell stops running after a change, the files are put back as they were. **Remove** leaves the shell's files byte for byte as upstream ships them.
+- What was added is recorded in `~/.local/state/m3-settings/inject/<shell>.json`.
+
+From a terminal: `m3-settings inject status`, `inject apply [ii|end4-pC|inir|dux]`, `inject remove [SHELL]`, `inject reapply`, and `inject migrate` (the fork switch described above, without the window).
+
+On Hyprland the page also offers the **keyboard shortcuts** the fork's installer used to add (`m3-settings keybinds add`): Super+I Settings, Super+E Files, Print / Super+Print / Super+Shift+R Screenshots, and Super+G / Super+Shift+G for the game library and Game Mode when the ii/end4-pC integration has it. Keys you've bound already are left alone. They go between `>>> m3-keybinds >>>` markers in `~/.config/hypr/custom/keybinds.lua` (or `.conf`) on end-4's dots, else the main config.
+
+**Login & boot**
+
+The login screen and boot animation that came with the fork (Desktop → Login & boot, or `m3-settings login`). Both use the style bridge's `style.json`, so they match any of the shells above.
+- **Login screen:** an SDDM theme (`end4-material`) like the lock screen. **Install** asks for your password once (pkexec or sudo), selects it with `/etc/sddm.conf.d/zz-end4-material.conf`, and **Remove** brings the previous theme back. SDDM can't read your home, so your wallpaper, colors, fonts and avatar are copied to `/var/lib/end4-material-sddm`; the `m3-login-sync.path` user unit does that again whenever `style.json` changes.
+- **Boot animation:** a Plymouth theme (`end4-pc`) rendered in your colors. **Refresh colors** renders it again and rebuilds the initramfs. It tells you if the `plymouth` mkinitcpio hook or `splash` on the kernel command line is missing.
+- The themes and scripts are in [`login/`](login/README.md), installed to `/usr/share/m3-settings/login`.
 
 **Material 3 apps**
 
@@ -57,7 +88,7 @@ The **Material 3 apps** page (Desktop → Material 3 apps, or `m3-settings mater
 | Calendar | `m3-calendar` | Google, Microsoft, iCloud and local calendars |
 | Comics | `m3-comics` | a manga and comics reader, like Mihon |
 
-- **Essential apps:** Settings, Files and Screenshots. The end4-pC shell depends on them, so it installs them itself. Here you can update or repair them, but not remove them.
+- **Essential apps:** Settings, Files and Screenshots. The shell integration relies on them. Here you can update or repair them, but not remove them.
 - **Optional apps:** everything else. You install them from this page.
 - **How apps are installed:** automatically by the best method available. You can change the method for each app under *Advanced*:
   1. **AUR package:** `material-3-<app>-bin`, or `-git`, through paru or yay in a terminal. This is used when the package is published. Updates then come with your system updates.
@@ -138,7 +169,7 @@ cd packaging
 makepkg -si
 ```
 
-Prebuilt x86_64 binaries are attached to [releases](https://github.com/bhimio1/material-3-settings/releases). The end4-pC fork installs the latest one automatically.
+Prebuilt x86_64 binaries are attached to [releases](https://github.com/bhimio1/material-3-settings/releases).
 
 Or build directly:
 
@@ -163,7 +194,7 @@ Each page offers to install the tool it needs: `glib2`, `libpulse`, `networkmana
 
 ## Theme
 
-In Preferences, **Auto** uses the end-4 shell's generated colors (`~/.local/state/quickshell/user/generated/colors.json`). If those don't exist it uses the file manager's matugen `theme.json`, and otherwise a seed color. The theme updates live when the wallpaper changes. Preferences are stored in `~/.config/m3-settings/config.toml`.
+In Preferences, **Auto** uses the shell's `~/.local/state/m3/style.json` (see the style bridge above), then the end-4 shell's generated colors (`~/.local/state/quickshell/user/generated/colors.json`). If those don't exist it uses the file manager's matugen `theme.json`, and otherwise a seed color. The theme updates live when the wallpaper changes. Preferences are stored in `~/.config/m3-settings/config.toml`.
 
 ## Project layout
 
@@ -173,12 +204,19 @@ src/
   catalog.rs    the App configs catalog (paths, formats, templates, quick settings)
   end4.rs       illogical-impulse / end4-pC detection, config.json, option schema
   hypr.rs       hyprctl queries and the managed Hyprland config block
+  inject/       shell integration: hooks, apply/remove, the re-apply path unit
+  keybinds.rs   the Material 3 apps' suggested Hyprland keybinds
+  login.rs      the login screen and boot animation, and their sync unit
   welcome.rs    the welcome's steps, the shell's first-run marker, the keybind cheat sheet
   material_apps/  the Material 3 apps: catalog, release checks, install/update/remove
   files.rs      open config files: save, backups, external changes
   formats/      comment-preserving key/value, TOML and JSONC editing
   sys/          pacman, audio, network, bluetooth, power, GTK, default apps, …
   ui/           sidebar, editor, the welcome, and one module per page
+inject/<pack>/            what gets added to each shell (embedded by build.rs);
+                          ii is used for ii and end4-pC
+login/                    the SDDM and Plymouth themes and their scripts
+tests/fixtures/shells/    upstream shell.qml files the injection tests run against
 assets/end4/schema.json   generated by scripts/gen_end4_schema.py from end4-pC's Config.qml
 ```
 

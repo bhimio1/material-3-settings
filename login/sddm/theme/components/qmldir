@@ -1,0 +1,6 @@
+singleton M3 1.0 M3.qml
+Icon 1.0 Icon.qml
+Toolbar 1.0 Toolbar.qml
+ToolbarButton 1.0 ToolbarButton.qml
+Avatar 1.0 Avatar.qml
+MenuSheet 1.0 MenuSheet.qml
