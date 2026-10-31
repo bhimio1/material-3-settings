@@ -56,4 +56,8 @@ Scope {
     }
 
     GameLibrary {}
+
+    StyleExporter {
+        shellName: "inir"
+    }
 }

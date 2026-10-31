@@ -56,4 +56,9 @@ Scope {
     }
 
     GameLibrary {}
+
+    // ii and end4-pC share this pack; the folder name tells them apart.
+    StyleExporter {
+        shellName: Quickshell.shellDir.split("/").filter(s => s !== "").pop() ?? "ii"
+    }
 }

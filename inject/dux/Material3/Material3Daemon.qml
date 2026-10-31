@@ -1,5 +1,6 @@
 // Material 3 apps integration for Dux Shell, added by Material 3 Settings.
-// Runs once per session: shows Material 3 Settings' welcome the first time.
+// Exports Dux Shell's look for the Material 3 apps (StyleExporter), and
+// shows Material 3 Settings' welcome the first time.
 
 import QtQuick
 import Quickshell
@@ -24,6 +25,8 @@ PluginComponent {
             return;
         welcomeProc.running = true;
     }
+
+    StyleExporter {}
 
     Process {
         id: welcomeProc
