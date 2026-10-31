@@ -58,7 +58,7 @@ The Material 3 changes used to live in a fork of end4-pC. The **Shell integratio
 - If the shell stops running after a change, the files are put back as they were. **Remove** leaves the shell's files byte for byte as upstream ships them.
 - What was added is recorded in `~/.local/state/m3-settings/inject/<shell>.json`.
 
-From a terminal: `m3-settings inject status`, `inject apply [ii|end4-pC|inir|dux]`, `inject remove [SHELL]`, `inject reapply`, and `inject migrate` (the fork switch below, without the window).
+From a terminal: `m3-settings inject status`, `inject apply [ii|end4-pC|inir|dux]`, `inject remove [SHELL]`, `inject reapply`, and `inject migrate` (the fork switch described above, without the window).
 
 On Hyprland the page also offers the **keyboard shortcuts** the fork's installer used to add (`m3-settings keybinds add`): Super+I Settings, Super+E Files, Print / Super+Print / Super+Shift+R Screenshots, and Super+G / Super+Shift+G for the game library and Game Mode when the ii/end4-pC integration has it. Keys you've bound already are left alone. They go between `>>> m3-keybinds >>>` markers in `~/.config/hypr/custom/keybinds.lua` (or `.conf`) on end-4's dots, else the main config.
 
