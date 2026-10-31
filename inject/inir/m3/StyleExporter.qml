@@ -1,5 +1,5 @@
 // The style bridge: writes this shell's resolved look (colors, light/dark,
-// fonts, rounding, transparency) to $XDG_STATE_HOME/m3/style.json whenever it
+// fonts, rounding, transparency, wallpaper) to $XDG_STATE_HOME/m3/style.json whenever it
 // changes, so the Material 3 apps follow the shell, presets and custom
 // themes included. material-3-ui reads the file (see its shell_style.rs).
 
@@ -61,7 +61,10 @@ Scope {
             transparency: {
                 background: Appearance.backgroundTransparency ?? 0,
                 content: Appearance.contentTransparency ?? 0
-            }
+            },
+            // For the login screen and boot splash Settings themes.
+            wallpaper: String(Config.options?.background?.wallpaperPath ?? "").replace(/^file:\/\//, ""),
+            wallpaper_thumbnail: String(Config.options?.background?.thumbnailPath ?? "").replace(/^file:\/\//, "")
         }, null, 2) + "\n";
     }
     onJsonChanged: writeTimer.restart()

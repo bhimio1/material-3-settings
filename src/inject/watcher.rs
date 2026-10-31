@@ -28,13 +28,17 @@ pub fn watched(home: &Path) -> Vec<PathBuf> {
         .collect()
 }
 
+#[cfg(test)]
 pub fn path_unit(paths: &[PathBuf]) -> String {
-    let mut s = String::from(
-        "# Written by Material 3 Settings: puts the Material 3 integration back\n\
-         # into your shell after the shell updates. Remove it from Settings.\n\
+    path_unit_for(SHELL_WATCH.description, SHELL_WATCH.what, paths)
+}
+
+fn path_unit_for(description: &str, what: &str, paths: &[PathBuf]) -> String {
+    let mut s = format!(
+        "# Written by Material 3 Settings: {what}. Remove it from Settings.\n\
          [Unit]\n\
-         Description=Re-apply Material 3 changes after shell updates\n\n\
-         [Path]\n",
+         Description={description}\n\n\
+         [Path]\n"
     );
     for p in paths {
         s.push_str(&format!("PathChanged={}\n", p.display()));
@@ -43,30 +47,48 @@ pub fn path_unit(paths: &[PathBuf]) -> String {
     s
 }
 
+#[cfg(test)]
 pub fn service_unit(exe: &Path) -> String {
+    let w = &SHELL_WATCH;
+    service_unit_for(w.description, w.comment, w.delay, exe, w.args)
+}
+
+fn service_unit_for(description: &str, comment: &str, delay: u32, exe: &Path, args: &str) -> String {
     format!(
         "[Unit]\n\
-         Description=Re-apply Material 3 changes after shell updates\n\n\
+         Description={description}\n\n\
          [Service]\n\
          Type=oneshot\n\
-         # Updaters write many files; let them finish.\n\
-         ExecStartPre=/bin/sleep 3\n\
-         ExecStart={} inject reapply\n",
+         {comment}\n\
+         ExecStartPre=/bin/sleep {delay}\n\
+         ExecStart={} {args}\n",
         exe.display()
     )
 }
 
-/// Write the units for the current set of shells and (re)start the path
-/// unit, or take them away when there's nothing left to watch.
-pub fn sync(home: &Path) -> Result<(), String> {
+/// A path unit and the oneshot service it starts.
+pub struct Watch<'a> {
+    pub unit: &'a str,
+    pub description: &'a str,
+    /// For the file's header: what the unit does.
+    pub what: &'a str,
+    pub comment: &'a str,
+    pub delay: u32,
+    /// `m3-settings` arguments the service runs.
+    pub args: &'a str,
+}
+
+/// Write the units for `paths` and (re)start the path unit, or take them
+/// away when there's nothing to watch.
+pub fn sync_watch(home: &Path, w: &Watch, paths: &[PathBuf]) -> Result<(), String> {
     let dir = unit_dir(home);
-    let path_file = dir.join(format!("{UNIT}.path"));
-    let service_file = dir.join(format!("{UNIT}.service"));
-    let paths = watched(home);
+    let path_file = dir.join(format!("{}.path", w.unit));
+    let service_file = dir.join(format!("{}.service", w.unit));
     let has_systemctl = cmd::exists("systemctl");
+    let unit = format!("{}.path", w.unit);
     if paths.is_empty() {
-        if has_systemctl {
-            let _ = cmd::run("systemctl", &["--user", "disable", "--now", &format!("{UNIT}.path")]);
+        if has_systemctl && path_file.exists() {
+            let _ = cmd::run("systemctl", &["--user", "disable", "--now", &unit]);
         }
         let _ = std::fs::remove_file(&path_file);
         let _ = std::fs::remove_file(&service_file);
@@ -74,12 +96,11 @@ pub fn sync(home: &Path) -> Result<(), String> {
     }
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
     std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
-    std::fs::write(&path_file, path_unit(&paths)).map_err(|e| e.to_string())?;
-    std::fs::write(&service_file, service_unit(&exe)).map_err(|e| e.to_string())?;
+    std::fs::write(&path_file, path_unit_for(w.description, w.what, paths)).map_err(|e| e.to_string())?;
+    std::fs::write(&service_file, service_unit_for(w.description, w.comment, w.delay, &exe, w.args)).map_err(|e| e.to_string())?;
     if has_systemctl {
         // Without a user session bus (a TTY, a container) the units are still
         // written and start at the next login; that's not worth failing over.
-        let unit = format!("{UNIT}.path");
         let steps: [&[&str]; 3] = [&["--user", "daemon-reload"], &["--user", "enable", &unit], &["--user", "restart", &unit]];
         for args in steps {
             if let Err(e) = cmd::run("systemctl", args) {
@@ -89,6 +110,20 @@ pub fn sync(home: &Path) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+pub const SHELL_WATCH: Watch = Watch {
+    unit: UNIT,
+    description: "Re-apply Material 3 changes after shell updates",
+    what: "puts the Material 3 integration back\n# into your shell after the shell updates",
+    comment: "# Updaters write many files; let them finish.",
+    delay: 3,
+    args: "inject reapply",
+};
+
+/// Keep the shell watcher in step with the shells we're in.
+pub fn sync(home: &Path) -> Result<(), String> {
+    sync_watch(home, &SHELL_WATCH, &watched(home))
 }
 
 #[cfg(test)]

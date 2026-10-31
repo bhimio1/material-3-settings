@@ -1,0 +1,15 @@
+[SddmGreeterTheme]
+Name=end4 Material
+Description=Material 3 login screen in your shell's colours
+Author=Material 3 Settings
+Copyright=end4-pC and Material 3 contributors
+License=GPL-3.0-or-later
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/bhimio1/material-3-settings
+Screenshot=preview.jpg
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=end4-material
+Theme-API=2.0
+QtVersion=6

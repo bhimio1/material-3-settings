@@ -29,6 +29,8 @@ pub enum Page {
     End4,
     /// Add the Material 3 integration to the stock shells.
     Shells,
+    /// The login screen and boot animation.
+    Login,
     Apps,
     /// One app's config, by catalog id (or `custom:<index>`).
     App(String),
@@ -56,7 +58,7 @@ pub const NAV: &[(&str, &[Page])] = &[
         ],
     ),
     ("Arch Linux", &[Page::Packages, Page::About]),
-    ("Desktop", &[Page::Hyprland, Page::End4, Page::Shells, Page::MaterialApps]),
+    ("Desktop", &[Page::Hyprland, Page::End4, Page::Shells, Page::Login, Page::MaterialApps]),
     ("Configs", &[Page::Apps]),
 ];
 
@@ -77,6 +79,7 @@ impl Page {
             Page::Hyprland => "Hyprland",
             Page::End4 => "end4-pC / ii",
             Page::Shells => "Shell integration",
+            Page::Login => "Login & boot",
             Page::Apps | Page::App(_) => "App configs",
             Page::MaterialApps | Page::MaterialApp(_) => "Material 3 apps",
             Page::Preferences => "Preferences",
@@ -99,6 +102,7 @@ impl Page {
             Page::Hyprland => ICON_WATER_DROP,
             Page::End4 => ICON_AUTO_AWESOME,
             Page::Shells => ICON_EXTENSION,
+            Page::Login => ICON_LOGIN,
             Page::Apps | Page::App(_) => ICON_TUNE,
             Page::MaterialApps | Page::MaterialApp(_) => ICON_WIDGETS,
             Page::Preferences => ICON_SETTINGS,
@@ -122,6 +126,7 @@ impl Page {
             "hyprland" => Page::Hyprland,
             "end4" | "end4-pc" | "ii" | "illogical-impulse" => Page::End4,
             "shells" | "shell" | "integration" => Page::Shells,
+            "login" | "boot" | "sddm" | "plymouth" => Page::Login,
             "apps" | "configs" => Page::Apps,
             "material-apps" | "m3-apps" => Page::MaterialApps,
             "preferences" | "prefs" => Page::Preferences,

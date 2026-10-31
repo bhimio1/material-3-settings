@@ -16,6 +16,7 @@ pub mod overview;
 pub mod packages;
 pub mod power;
 pub mod prefs;
+pub mod login;
 pub mod shells;
 pub mod sound;
 
@@ -40,6 +41,7 @@ pub struct States {
     pub power: power::State,
     pub prefs: prefs::State,
     pub shells: shells::State,
+    pub login: login::State,
     pub sound: sound::State,
 }
 
@@ -59,6 +61,7 @@ pub fn show(ui: &mut egui::Ui, app: &mut App) {
         Page::Hyprland => hyprland::show(ui, app),
         Page::End4 => end4::show(ui, app),
         Page::Shells => shells::show(ui, app),
+        Page::Login => login::show(ui, app),
         Page::Apps => apps::show_catalog(ui, app),
         Page::App(id) => apps::show_app(ui, app, &id),
         Page::MaterialApps => material_apps::show_list(ui, app),

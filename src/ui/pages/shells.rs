@@ -3,6 +3,7 @@
 
 use crate::app::App;
 use crate::inject::{self, State as InjectState, Status, Target};
+use crate::keybinds;
 use crate::ui::{toast, ToastKind};
 use egui::{RichText, Ui};
 use material_3_ui::common::{self, card};
@@ -13,8 +14,17 @@ use material_3_ui::widgets::{self, ButtonKind};
 #[derive(Default)]
 pub struct State {
     status: Task<Vec<Status>>,
+    keys: Task<Option<keybinds::Plan>>,
     job: Task<Result<String, String>>,
     job_label: String,
+}
+
+/// Keybinds only make sense on Hyprland.
+fn load_keys() -> Option<keybinds::Plan> {
+    let home = paths::home();
+    let hypr = home.join(".config/hypr");
+    (hypr.join("hyprland.lua").is_file() || hypr.join("hyprland.conf").is_file())
+        .then(|| keybinds::plan(&home, &keybinds::live_keys(), keybinds::have_games(&home)))
 }
 
 fn load() -> Vec<Status> {
@@ -55,13 +65,16 @@ pub fn show(ui: &mut Ui, app: &mut App) {
     let st = &mut app.pages.shells;
 
     st.status.ensure(&ctx, load);
+    st.keys.ensure(&ctx, load_keys);
     if let Some(result) = st.job.take() {
         match result {
             Ok(msg) => toast(actions, msg, ToastKind::Success),
             Err(e) => toast(actions, format!("{} failed: {e}", st.job_label), ToastKind::Error),
         }
         st.status.spawn(&ctx, load);
+        st.keys.spawn(&ctx, load_keys);
     }
+    let backups = app.config.backups;
     let busy = st.job.running();
 
     common::page(
@@ -117,6 +130,38 @@ pub fn show(ui: &mut Ui, app: &mut App) {
                     }
                 });
             }
+            if let Some(Some(plan)) = st.keys.value.clone() {
+                card(ui, "Keyboard shortcuts", |ui| {
+                    let free = plan.binds.iter().filter(|(_, f)| *f).count();
+                    let desc = if plan.added > 0 {
+                        format!("{} Material 3 keybinds added to your Hyprland config.", plan.added)
+                    } else {
+                        "Hyprland keybinds for the Material 3 apps. Keys you've already bound are left alone.".to_string()
+                    };
+                    common::row(ui, if plan.added > 0 { "Added" } else { "Not added" }, &desc, |ui| {
+                        ui.add_enabled_ui(!busy, |ui| {
+                            if plan.added > 0 && widgets::button(ui, ButtonKind::Text, Some(ICON_DELETE), "Remove").clicked() {
+                                st.job_label = "Removing the keybinds".into();
+                                st.job.spawn(&ctx, move || keybinds::remove(&paths::home(), backups));
+                            }
+                            if (plan.added == 0 || free > plan.added)
+                                && widgets::button(ui, if plan.added > 0 { ButtonKind::Tonal } else { ButtonKind::Filled }, Some(ICON_ADD), "Add").clicked()
+                            {
+                                st.job_label = "Adding the keybinds".into();
+                                st.job.spawn(&ctx, move || keybinds::apply(&paths::home(), backups));
+                            }
+                        });
+                    });
+                    ui.add_space(4.0);
+                    for (s, free) in &plan.binds {
+                        ui.horizontal(|ui| {
+                            ui.label(RichText::new(crate::welcome::pretty_keys(s.key)).size(12.5).strong());
+                            let note = if *free { s.description.to_string() } else { format!("{} (key already in use)", s.description) };
+                            ui.label(RichText::new(note).size(12.5).color(p.on_surface_variant));
+                        });
+                    }
+                });
+            }
             if busy {
                 ui.add_space(8.0);
                 ui.label(RichText::new(format!("{}…", st.job_label)).color(p.on_surface_variant));
@@ -124,6 +169,7 @@ pub fn show(ui: &mut Ui, app: &mut App) {
             ui.add_space(12.0);
             if common::refresh_button(ui, st.status.running()) {
                 st.status.spawn(&ctx, load);
+                st.keys.spawn(&ctx, load_keys);
             }
         },
     );

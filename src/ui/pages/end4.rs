@@ -247,13 +247,27 @@ fn status_card(ui: &mut Ui, st: &mut State, ctx: &egui::Context, backups: bool, 
 
         // end4-pC
         ui.separator();
+        if status.fork.old_fork {
+            common::banner(
+                ui,
+                ICON_INFO,
+                "This end4-pC is the old bhimio1 fork, which is no longer updated. Settings now adds the same Material 3 integration to pctrade's end4-pC, so you get its updates too. Switching keeps your settings and moves the old folder aside.",
+                false,
+                |ui| {
+                    if widgets::button_enabled(ui, ButtonKind::Filled, Some(ICON_SYNC), "Switch to pctrade's end4-pC", !busy).clicked() {
+                        st.start_job(ctx, "Switch", || end4::switch_from_old_fork(&paths::home()));
+                    }
+                },
+            );
+            ui.add_space(4.0);
+        }
         let fork_desc = if status.fork.installed {
             format!(
-                "Fork of pctrade's end4-pC with Material 3 Expressive styling, desktop widgets, a preset gallery, and these Material 3 apps built in.{}",
+                "pctrade's fork of illogical-impulse with Material 3 Expressive styling, desktop widgets and a preset gallery. Shell integration adds the Material 3 apps to it.{}",
                 status.fork.commit.as_ref().map(|c| format!(" Version {c}.")).unwrap_or_default()
             )
         } else {
-            "Fork of pctrade's end4-pC with Material 3 Expressive styling, desktop widgets, a preset gallery, and these Material 3 apps built in. It needs illogical-impulse installed and keeps its own folder, so nothing of your current setup is changed.".to_string()
+            "pctrade's fork of illogical-impulse with Material 3 Expressive styling, desktop widgets and a preset gallery; Settings adds the Material 3 apps to it. It needs illogical-impulse installed and keeps its own folder, so nothing of your current setup is changed.".to_string()
         };
         common::row(ui, "end4-pC", &fork_desc, |ui| {
             if status.fork.installed {

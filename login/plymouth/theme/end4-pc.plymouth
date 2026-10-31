@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=end4-pC
+Description=end4-pC boot animation: the illogical-impulse emblem drawing itself in, then spinning while the system starts
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/end4-pc
+ScriptFile=/usr/share/plymouth/themes/end4-pc/end4-pc.script

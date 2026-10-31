@@ -64,7 +64,9 @@ Item {
             transparency: {
                 background: 1 - (Theme.popupTransparency ?? 1),
                 content: 0
-            }
+            },
+            // A solid color is stored in the same field; only paths count.
+            wallpaper: String(SessionData.wallpaperPath ?? "").startsWith("/") ? SessionData.wallpaperPath : ""
         }, null, 2) + "\n";
     }
     onJsonChanged: writeTimer.restart()

@@ -4,10 +4,10 @@
 pkgname=material-3-settings-bin
 pkgver=@PKGVER@
 pkgrel=1
-pkgdesc="Material 3 settings manager for Arch Linux, Hyprland and end4-pC"
+pkgdesc="Material 3 settings manager for Arch Linux, Hyprland and Quickshell desktops"
 arch=('x86_64')
 url="https://github.com/bhimio1/material-3-settings"
-license=('MIT')
+license=('MIT' 'GPL-3.0-or-later')
 depends=('libxkbcommon' 'wayland' 'libglvnd' 'fontconfig' 'xdg-utils' 'polkit')
 optdepends=(
   'glib2: GTK theme, icon and font settings (gsettings)'
@@ -19,6 +19,12 @@ optdepends=(
   'pacman-contrib: update checks and cache cleaning (checkupdates, paccache)'
   'reflector: mirror ranking'
   'hyprland: Hyprland and display settings'
+  'sddm: the Material 3 login screen'
+  'plymouth: the boot animation'
+  "jq: copying your shell's look to the login screen"
+  'imagemagick: login screen wallpapers other than JPEG and PNG'
+  'python: rendering the boot animation'
+  'librsvg: rendering the boot animation (or python-cairosvg)'
 )
 provides=('material-3-settings')
 conflicts=('material-3-settings' 'material-3-settings-git')
@@ -30,5 +36,12 @@ package() {
   install -Dm755 m3-settings "$pkgdir/usr/bin/m3-settings"
   install -Dm644 material_3_settings.desktop "$pkgdir/usr/share/applications/material_3_settings.desktop"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  # The login screen and boot animation themes and their scripts (GPL-3.0).
+  install -d "$pkgdir/usr/share/m3-settings"
+  cp -r login "$pkgdir/usr/share/m3-settings/login"
+  rm -rf "$pkgdir/usr/share/m3-settings/login/sddm/test"
+  chmod -R u=rwX,go=rX "$pkgdir/usr/share/m3-settings/login"
+  chmod 755 "$pkgdir"/usr/share/m3-settings/login/{sddm,plymouth}/*.sh
+  install -Dm644 login/LICENSE-GPL-3.0 "$pkgdir/usr/share/licenses/$pkgname/LICENSE-GPL-3.0"
   install -Dm644 LICENSE-Inter.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE-Inter.txt"
 }
