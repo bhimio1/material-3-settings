@@ -39,6 +39,11 @@ pub struct Hook {
     pub action: Action,
     /// The lines to add, as they should appear (indentation included).
     pub text: String,
+    /// Skip the hook (and so its feature) when the file already matches
+    /// this regex, e.g. upstream added the property the hook would add,
+    /// which would be a QML error.
+    #[serde(default)]
+    pub unless: Option<String>,
     /// Shells (folder names) the hook is for; empty means every shell the
     /// pack is used for.
     #[serde(default)]
@@ -68,6 +73,9 @@ pub fn parse(text: &str) -> Result<Vec<Hook>, String> {
             return Err(format!("hook id {:?} is used twice", h.id));
         }
         Regex::new(&format!("(?m){}", h.anchor)).map_err(|e| format!("hook {}: {e}", h.id))?;
+        if let Some(u) = &h.unless {
+            Regex::new(&format!("(?m){u}")).map_err(|e| format!("hook {}: {e}", h.id))?;
+        }
     }
     Ok(f.hooks)
 }
@@ -83,6 +91,8 @@ pub fn comment_for(file: &str) -> &'static str {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Miss {
     NotFound,
+    /// The `unless` regex matched: upstream has its own version now.
+    AlreadyThere,
     /// The anchor matched this many times.
     Ambiguous(usize),
 }
@@ -91,6 +101,7 @@ impl std::fmt::Display for Miss {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Miss::NotFound => write!(f, "the line it attaches to wasn't found"),
+            Miss::AlreadyThere => write!(f, "the shell now has its own version of what it adds"),
             Miss::Ambiguous(n) => write!(f, "the line it attaches to appears {n} times"),
         }
     }
@@ -130,6 +141,11 @@ fn block(hook: &Hook, comment: &str, orig: Option<&str>) -> String {
 /// Apply one hook. `text` must not already contain this hook's markers
 /// (strip first).
 pub fn apply(text: &str, hook: &Hook) -> Result<String, Miss> {
+    if let Some(u) = &hook.unless {
+        if Regex::new(&format!("(?m){u}")).is_ok_and(|re| re.is_match(text)) {
+            return Err(Miss::AlreadyThere);
+        }
+    }
     let re = Regex::new(&format!("(?m){}", hook.anchor)).map_err(|_| Miss::NotFound)?;
     let found: Vec<_> = re.find_iter(text).collect();
     let m = match found.len() {
@@ -210,6 +226,7 @@ mod tests {
             anchor: anchor.into(),
             action,
             text: text.into(),
+            unless: None,
             only: vec![],
         }
     }
@@ -257,6 +274,13 @@ mod tests {
         // Strip gives back the newline-terminated form; that's the only
         // difference, and the shell doesn't care.
         assert_eq!(strip(&out, "//").unwrap(), "a\nb\n");
+    }
+
+    #[test]
+    fn unless_skips_when_upstream_has_it() {
+        let mut h = hook(Action::After, r"^\s*ReloadPopup \{\}", "    altAction: null");
+        h.unless = Some(r"^\s*id: root".into());
+        assert_eq!(apply(SHELL, &h), Err(Miss::AlreadyThere));
     }
 
     #[test]

@@ -1,8 +1,30 @@
 use super::*;
 use std::fs;
 
+fn fixture_dir(shell: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shells").join(shell)
+}
+
 fn fixture(shell: &str) -> String {
-    fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shells").join(shell).join("shell.qml")).unwrap()
+    fs::read_to_string(fixture_dir(shell).join("shell.qml")).unwrap()
+}
+
+/// Every file of a shell's fixture, relative path → contents.
+fn fixture_files(shell: &str) -> Vec<(PathBuf, String)> {
+    let root = fixture_dir(shell);
+    let mut out = Vec::new();
+    let mut stack = vec![root.clone()];
+    while let Some(d) = stack.pop() {
+        for e in fs::read_dir(&d).unwrap().flatten() {
+            let p = e.path();
+            if p.is_dir() {
+                stack.push(p);
+            } else {
+                out.push((p.strip_prefix(&root).unwrap().to_path_buf(), fs::read_to_string(&p).unwrap()));
+            }
+        }
+    }
+    out
 }
 
 /// A fake home with one shell installed from its fixture.
@@ -10,8 +32,10 @@ fn home_with(t: Target) -> (tempfile::TempDir, PathBuf) {
     let tmp = tempfile::tempdir().unwrap();
     let home = tmp.path().to_path_buf();
     let dir = t.dir(&home);
-    fs::create_dir_all(&dir).unwrap();
-    fs::write(dir.join("shell.qml"), fixture(t.id())).unwrap();
+    for (rel, text) in fixture_files(t.id()) {
+        fs::create_dir_all(dir.join(&rel).parent().unwrap()).unwrap();
+        fs::write(dir.join(rel), text).unwrap();
+    }
     (tmp, home)
 }
 
@@ -36,8 +60,13 @@ fn applies_to_each_upstream_and_removes_cleanly() {
         let report = apply(&home, t).unwrap();
         assert_eq!(report.skipped, vec![], "{}", t.id());
         assert!(report.features.contains(&"core".to_string()));
+        if t != Target::Inir {
+            for f in ["screenshots", "welcome", "games", "calendar"] {
+                assert!(report.features.contains(&f.to_string()), "{} misses {f}", t.id());
+            }
+        }
         let shell = fs::read_to_string(dir.join("shell.qml")).unwrap();
-        assert!(shell.contains("import \"m3\"\n"), "{}", t.id());
+        assert!(shell.contains("import qs.m3\n"), "{}", t.id());
         assert!(shell.contains("    M3Root {}\n"), "{}", t.id());
         assert!(dir.join("m3/M3Root.qml").is_file());
         assert_eq!(status(&home, t).state, State::Applied { pack_version: PACK_VERSION });
@@ -49,7 +78,10 @@ fn applies_to_each_upstream_and_removes_cleanly() {
         assert_eq!(fs::read_to_string(dir.join("shell.qml")).unwrap(), before);
 
         remove(&home, t).unwrap();
-        assert_eq!(fs::read_to_string(dir.join("shell.qml")).unwrap(), original, "{}", t.id());
+        for (rel, text) in fixture_files(t.id()) {
+            assert_eq!(fs::read_to_string(dir.join(&rel)).unwrap(), text, "{} {}", t.id(), rel.display());
+        }
+        let _ = &original;
         assert!(!dir.join("m3").exists());
         assert_eq!(status(&home, t).state, State::Clean);
     }

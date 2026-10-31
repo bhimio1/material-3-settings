@@ -6,7 +6,7 @@ feature = "core"
 file = "shell.qml"
 anchor = '^ShellRoot\s*\{'
 action = "before"
-text = 'import "m3"'
+text = "import qs.m3"
 
 [[hook]]
 id = "root"

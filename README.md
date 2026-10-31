@@ -48,6 +48,7 @@ The Material 3 changes used to live in a fork of end4-pC. The **Shell integratio
 | [iNiR](https://github.com/snowarch/iNiR) | The same; `inir update` replaces them and they're put back within seconds |
 | [Dux Shell](https://github.com/AvengeMedia/DankMaterialShell) (formerly DankMaterialShell) | A plugin in `~/.config/dms/plugins/Material3`, turned on in `plugin_settings.json`. The shell itself isn't touched |
 
+- On ii and end4-pC it adds: region captures go to Material 3 Screenshots, the first-run welcome is Settings' own, Game Mode's right-click opens the game library (Material 3 Games, also `qs -c <shell> ipc call games toggle`), the sidebar calendar shows Material 3 Calendar's events, and the Bluetooth and network buttons open Settings. Each needs its app installed and otherwise behaves as before.
 - Each edit finds one line in the upstream file. If an update changes that line, the feature that needs it is left out and listed on the page, and the rest still goes in. Without the core edit to `shell.qml` nothing is changed.
 - A systemd user path unit, `m3-shell-inject.path`, watches each shell's `shell.qml` (and iNiR's `.inir-manifest`) and runs `m3-settings inject reapply` after an update. Settings also re-applies when it starts, and **Update** on the end4-pC / ii page takes the edits out before `git pull` and puts them back after.
 - If the shell stops running after a change, the files are put back as they were. **Remove** leaves the shell's files byte for byte as upstream ships them.
