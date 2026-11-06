@@ -11,7 +11,7 @@ A settings manager for Arch Linux, built with [egui](https://github.com/emilk/eg
 **System**
 - **Appearance:** the wallpaper and where its colors come from (with the end-4 shell), GTK theme, icon theme, cursor theme and size, interface and monospace fonts, light/dark preference. Changes go through `gsettings` and are mirrored into the GTK 3/4 `settings.ini` files. Cursor changes apply to Hyprland straight away.
 - **Displays:** resolution, refresh rate, scale, rotation and position for each monitor (Hyprland). Try a change first, then keep it.
-- **Sound:** output and input devices, the default device, volume and mute (`pactl`).
+- **Sound:** output and input devices, the default device, volume and mute (`pactl`). **Open Sound** opens [Material 3 Sound](https://github.com/bhimio1/material-3-sound) for per-app volumes, routing, equalizers and scenes, or takes you to its page in Material 3 apps to install it.
 - **Network:** Wi-Fi on/off, scan and connect (with a password prompt), saved networks, wired and VPN profiles, airplane mode, hostname (`nmcli`).
 - **Bluetooth:** power, visibility, scan, then pair, connect or forget devices, with battery levels (`bluetoothctl`).
 - **Power:** power profiles, battery health and charge limit, brightness, suspend/hibernate/restart/shut down.
@@ -48,6 +48,7 @@ The **Material 3 apps** page (Desktop → Material 3 apps, or `m3-settings mater
 | Files | `m3fm` | the [file manager](https://github.com/bhimio1/material-3-file-manager-rust) |
 | Screenshots | `m3-screenshots` | capture, annotate and record the screen |
 | Music | `m3-music` | YouTube Music and your local library |
+| Sound | `m3-sound` | a patchbay and mixer for PipeWire |
 | Games | `m3-games` | Steam, Lutris and Heroic games, and Game Mode |
 | Browser | `m3-browser` | Zen, with websites themed to your wallpaper |
 | AI | `m3-ai` | a desktop app for Claude Code |

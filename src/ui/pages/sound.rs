@@ -188,20 +188,54 @@ fn flush_volume(st: &mut State, ctx: &egui::Context, dragging: bool) {
     }
 }
 
+/// Material 3 Sound (`m3-sound`), where it is installed: in `~/.local/bin`
+/// (a release or source install) or anywhere on `PATH`.
+fn m3_sound() -> Option<String> {
+    let app = crate::material_apps::find("sound")?;
+    let local = crate::material_apps::Dirs::from_env().binary(app);
+    if local.is_file() {
+        return Some(local.to_string_lossy().into_owned());
+    }
+    cmd::exists(app.bin).then(|| app.bin.to_string())
+}
+
+/// Opens Material 3 Sound for per-app volumes and routing, or offers to get
+/// it; pavucontrol (or another mixer that is installed) stays as a fallback.
 fn mixer_button(ui: &mut Ui, actions: &mut Actions, installed: &std::collections::HashSet<String>) {
+    let sound = m3_sound();
+    if let Some(bin) = &sound {
+        if widgets::button(ui, ButtonKind::Filled, Some(ICON_GRAPHIC_EQ), "Open Sound")
+            .on_hover_text("Material 3 Sound: per-app volumes, routing, equalizers and scenes")
+            .clicked()
+        {
+            if let Err(e) = cmd::spawn_detached(bin, &[]) {
+                actions.push(Action::Toast(e, ToastKind::Error));
+            }
+        }
+    } else if widgets::button(ui, ButtonKind::Tonal, Some(ICON_GRAPHIC_EQ), "Get Material 3 Sound")
+        .on_hover_text("A patchbay and mixer: per-app volumes, routing, equalizers and scenes")
+        .clicked()
+    {
+        actions.push(Action::Goto(crate::ui::Page::MaterialApp("sound".into())));
+    }
+
     let mixer = ["pavucontrol", "pavucontrol-qt", "pwvucontrol"]
         .into_iter()
         .find(|m| cmd::exists(m));
     match mixer {
         Some(m) => {
-            if widgets::button(ui, ButtonKind::Tonal, Some(ICON_TUNE), "Open mixer").clicked() {
+            if widgets::button(ui, ButtonKind::Outlined, Some(ICON_TUNE), "Open mixer")
+                .on_hover_text(m)
+                .clicked()
+            {
                 if let Err(e) = cmd::spawn_detached(m, &[]) {
                     actions.push(Action::Toast(e, ToastKind::Error));
                 }
             }
         }
-        None if !installed.contains("pavucontrol")
-            && widgets::button(ui, ButtonKind::Outlined, Some(ICON_DOWNLOAD), "Install mixer")
+        None if sound.is_none()
+            && !installed.contains("pavucontrol")
+            && widgets::button(ui, ButtonKind::Outlined, Some(ICON_DOWNLOAD), "Install pavucontrol")
                 .on_hover_text("pavucontrol: per-app volumes, ports and profiles")
                 .clicked() =>
         {
