@@ -138,6 +138,27 @@ pub const APPS: &[MaterialApp] = &[
         npm_extension: false,
     },
     MaterialApp {
+        id: "sound",
+        bin: "m3-sound",
+        name: "Sound",
+        repo: "bhimio1/material-3-sound",
+        desktop_id: "material_3_sound",
+        aur: "material-3-sound",
+        icon: ICON_GRAPHIC_EQ,
+        summary: "A patchbay and mixer for PipeWire",
+        description: "Draw cords from apps to speakers, headphones, equalizers and recorders. \
+                      Every app and device gets its own volume, balance and mute, and whole \
+                      wirings can be saved as scenes.",
+        essential: false,
+        needs: &[
+            need(&["pw-dump"], "pipewire", "Reads the sound graph", true),
+            need(&["wpctl"], "wireplumber", "Manages sessions and remembers volumes", true),
+        ],
+        share: None,
+        service: None,
+        npm_extension: false,
+    },
+    MaterialApp {
         id: "games",
         bin: "m3-games",
         name: "Games",
@@ -562,6 +583,7 @@ mod tests {
         assert_eq!(find("files").unwrap().desktop_id, "material_3_file_manager");
         assert_eq!(find("viewer").unwrap().repo, "bhimio1/material-3-veiwer");
         assert_eq!(find("calendar").unwrap().service, Some("m3-calendar.service"));
+        assert_eq!(find("m3-sound").unwrap().desktop_id, "material_3_sound");
         assert_eq!(find("m3-comics").unwrap().desktop_id, "material_3_comics");
         assert!(find("nope").is_none());
     }
